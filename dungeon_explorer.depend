@@ -1,0 +1,26 @@
+# depslib dependency file v1.0
+1743146935 source:e:\learning material\code blocks\dungeon_explorer\main.cpp
+	<SDL.h>
+	<vector>
+	"movement.h"
+	"defs.h"
+	"obstacle.h"
+
+1743124777 e:\learning material\code blocks\dungeon_explorer\movement.h
+	<SDL.h>
+	<vector>
+	"obstacle.h"
+
+1743123643 e:\learning material\code blocks\dungeon_explorer\defs.h
+	<SDL.h>
+	<SDL_image.h>
+
+1743124818 source:e:\learning material\code blocks\dungeon_explorer\movement.cpp
+	"movement.h"
+
+1743124297 source:e:\learning material\code blocks\dungeon_explorer\obstacle.cpp
+	"obstacle.h"
+
+1743124304 e:\learning material\code blocks\dungeon_explorer\obstacle.h
+	<SDL.h>
+
