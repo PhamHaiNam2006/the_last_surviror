@@ -10,28 +10,36 @@ int main(int argc, char* argv[]) {
     SDL_Init(SDL_INIT_VIDEO);
     SDL_Window* window = SDL_CreateWindow("Arrow Key Movement", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    SDL_Texture* texture1 = IMG_LoadTexture(renderer,"E:/learning_material/code_blocks/dungeon_explorer/png_file/main_char/main_right.png");
+    SDL_Texture* texture2 = IMG_LoadTexture(renderer,"E:/learning_material/code_blocks/dungeon_explorer/png_file/main_char/main_left.png");
 
     bool running = true;
     SDL_Event event;
 
-    SDL_Rect rect = { SCREEN_WIDTH , SCREEN_HEIGHT / 2 -25, 50, 50 };
+    SDL_Rect rect = { SCREEN_WIDTH / 2 - 25, SCREEN_HEIGHT / 2 - 25, 50, 50 };
     Movement movement(10);
 
     vector<Obstacle> obstacles = {
-        Obstacle(0, 100, 100, 100),
-        Obstacle(100, 300, 50, 50),
-        Obstacle(600, 450, 100, 100)
+        Obstacle(0, 0, 10, 600),
+        Obstacle(0, 0, 800, 10),
+        Obstacle(0, 590, 800, 10)
     };
-
+    bool isLeft=false;
     while (running) {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 running = false;
             } else {
                 movement.handleEvent(event);
+                switch (event.key.keysym.sym) {
+                    case SDLK_LEFT:
+                        isLeft = true;
+                        break;
+                    case SDLK_RIGHT:
+                        isLeft = false;
+                }
             }
         }
-
         movement.update(rect, obstacles);
 
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
@@ -40,9 +48,12 @@ int main(int argc, char* argv[]) {
         for (const auto& obstacle : obstacles) {
             obstacle.render(renderer);
         }
+        if(!isLeft){
+            SDL_RenderCopy(renderer,texture1,NULL,&rect);
+        } else {
+            SDL_RenderCopy(renderer,texture2,NULL,&rect);
+        }
 
-        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-        SDL_RenderFillRect(renderer, &rect);
 
         SDL_RenderPresent(renderer);
 

@@ -10,7 +10,6 @@ public:
     Movement(int speed);
     void handleEvent(const SDL_Event& event);
     void update(SDL_Rect& rect, const std::vector<Obstacle>& obstacles);
-
 private:
     int speed;
     int dx, dy;
