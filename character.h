@@ -13,6 +13,9 @@ public:
     Character();
     ~Character();
     void move(int x, int y);
+    void healthUpdate(int n){
+        health-=n;
+    }
     void render();
     void update();
     void handleEvent(SDL_Event& e);

@@ -14,11 +14,11 @@ int main(int argc, char* argv[]) {
     bool running = true;
     SDL_Event event;
 
-    SDL_Rect rect = { SCREEN_WIDTH / 2 - 25, SCREEN_HEIGHT / 2 - 25, 50, 50 };
+    SDL_Rect rect = { SCREEN_WIDTH , SCREEN_HEIGHT / 2 -25, 50, 50 };
     Movement movement(10);
 
     vector<Obstacle> obstacles = {
-        Obstacle(200, 150, 100, 100),
+        Obstacle(0, 100, 100, 100),
         Obstacle(100, 300, 50, 50),
         Obstacle(600, 450, 100, 100)
     };
