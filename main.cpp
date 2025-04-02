@@ -3,6 +3,7 @@
 #include "movement.h"
 #include "defs.h"
 #include "obstacle.h"
+#include "character.h"
 
 using namespace std;
 
@@ -18,7 +19,8 @@ int main(int argc, char* argv[]) {
     SDL_Event event;
 
     SDL_Rect rect = { SCREEN_WIDTH / 2 - 25, SCREEN_HEIGHT / 2 - 25, 50, 50 };
-    Movement movement(10);
+    Movement movement(5);
+    MainChar mainChar(100);
 
     vector<Obstacle> obstacles = {
         Obstacle(0, 0, 32, 600),
@@ -81,6 +83,8 @@ int main(int argc, char* argv[]) {
         } else if(isDown) {
             SDL_RenderCopy(renderer,texture4,NULL,&rect);
         }
+
+        mainChar.renderHealthBar(renderer);
 
         SDL_RenderPresent(renderer);
 

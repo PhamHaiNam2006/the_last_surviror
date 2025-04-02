@@ -3,17 +3,17 @@
 #include "movement.h"
 #include <SDL.h>
 
-class Character
-{
+class MainChar {
 public:
-    Character();
-    ~Character();
-    void move(int x, int y);
-    void render();
-    void update();
-    void handleEvent(SDL_Event& e);
-    void setCamera(SDL_Rect& camera);
-    SDL_Rect getRect();
-};
+    MainChar(int health);
 
+    void renderHealthBar(SDL_Renderer* renderer) const ;
+
+    SDL_Rect& getRect() { return rect; }
+    int getHealth() const { return health; }
+    void reduceHealth(int amount) { health = (health - amount > 0) ? health - amount : 0; }
+private:
+    SDL_Rect rect;
+    int health;
+};
 #endif
