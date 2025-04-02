@@ -10,11 +10,10 @@ int main(int argc, char* argv[]) {
     SDL_Init(SDL_INIT_VIDEO);
     SDL_Window* window = SDL_CreateWindow("Arrow Key Movement", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    SDL_Texture* texture1 = IMG_LoadTexture(renderer,"E:/learning_material/code_blocks/dungeon_explorer/png_file/main_char/main_right.png");
-    SDL_Texture* texture2 = IMG_LoadTexture(renderer,"E:/learning_material/code_blocks/dungeon_explorer/png_file/main_char/main_left.png");
-    SDL_Texture* texture3 = IMG_LoadTexture(renderer,"E:/learning_material/code_blocks/dungeon_explorer/png_file/main_char/main_up.png");
-    SDL_Texture* texture4 = IMG_LoadTexture(renderer,"E:/learning_material/code_blocks/dungeon_explorer/png_file/main_char/main_down.png");
-
+    SDL_Texture* texture1 = IMG_LoadTexture(renderer,"png_file/main_char/main_right.png");
+    SDL_Texture* texture2 = IMG_LoadTexture(renderer,"png_file/main_char/main_left.png");
+    SDL_Texture* texture3 = IMG_LoadTexture(renderer,"png_file/main_char/main_up.png");
+    SDL_Texture* texture4 = IMG_LoadTexture(renderer,"png_file/main_char/main_down.png");
     bool running = true;
     SDL_Event event;
 
@@ -22,12 +21,12 @@ int main(int argc, char* argv[]) {
     Movement movement(10);
 
     vector<Obstacle> obstacles = {
-        Obstacle(0, 0, 10, 600),
-        Obstacle(0, 0, 800, 10),
-        Obstacle(0, 590, 800, 10)
+        Obstacle(0, 0, 32, 600),
+        Obstacle(0, 0, 800, 32),
+        Obstacle(0, 568, 800, 32)
     };
     bool isLeft=false;
-    bool isRight=false;
+    bool isRight=true;
     bool isUp=false;
     bool isDown=false;
     while (running) {
