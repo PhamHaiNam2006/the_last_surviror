@@ -12,6 +12,8 @@ int main(int argc, char* argv[]) {
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     SDL_Texture* texture1 = IMG_LoadTexture(renderer,"E:/learning_material/code_blocks/dungeon_explorer/png_file/main_char/main_right.png");
     SDL_Texture* texture2 = IMG_LoadTexture(renderer,"E:/learning_material/code_blocks/dungeon_explorer/png_file/main_char/main_left.png");
+    SDL_Texture* texture3 = IMG_LoadTexture(renderer,"E:/learning_material/code_blocks/dungeon_explorer/png_file/main_char/main_up.png");
+    SDL_Texture* texture4 = IMG_LoadTexture(renderer,"E:/learning_material/code_blocks/dungeon_explorer/png_file/main_char/main_down.png");
 
     bool running = true;
     SDL_Event event;
@@ -25,18 +27,40 @@ int main(int argc, char* argv[]) {
         Obstacle(0, 590, 800, 10)
     };
     bool isLeft=false;
+    bool isRight=false;
+    bool isUp=false;
+    bool isDown=false;
     while (running) {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 running = false;
-            } else {
+            }
+            if (event.type == SDL_KEYDOWN) {
                 movement.handleEvent(event);
                 switch (event.key.keysym.sym) {
                     case SDLK_LEFT:
                         isLeft = true;
+                        isRight = false;
                         break;
                     case SDLK_RIGHT:
+                        isRight = true;
                         isLeft = false;
+                        break;
+                    case SDLK_UP:
+                        isUp = true;
+                        isDown = false;
+                        break;
+                    case SDLK_DOWN:
+                        isDown = true;
+                        isUp = false;
+                        break;
+                }
+            }
+            if (event.type == SDL_KEYUP) {
+                movement.handleEvent(event);
+                switch (event.key.keysym.sym) {
+                    case SDLK_UP: isUp = false; break;
+                    case SDLK_DOWN: isDown = false; break;
                 }
             }
         }
@@ -48,12 +72,16 @@ int main(int argc, char* argv[]) {
         for (const auto& obstacle : obstacles) {
             obstacle.render(renderer);
         }
-        if(!isLeft){
+        if(isRight){
             SDL_RenderCopy(renderer,texture1,NULL,&rect);
-        } else {
+        } else if (isLeft) {
             SDL_RenderCopy(renderer,texture2,NULL,&rect);
         }
-
+        if(isUp){
+            SDL_RenderCopy(renderer,texture3,NULL,&rect);
+        } else if(isDown) {
+            SDL_RenderCopy(renderer,texture4,NULL,&rect);
+        }
 
         SDL_RenderPresent(renderer);
 
