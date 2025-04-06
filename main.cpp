@@ -7,19 +7,31 @@
 
 using namespace std;
 
+void renderTiledBackground(SDL_Renderer* renderer, int screenWidth, int screenHeight) {
+    int tileSize = 16; // Your tile is 16x16
+    SDL_Texture* tileTexture = IMG_LoadTexture(renderer,"png_file/environment/background_rock.png");
+
+    SDL_Rect srcRect = { 0, 0, tileSize, tileSize };
+    SDL_Rect destRect;
+
+    for (int y = 0; y < screenHeight; y += tileSize) {
+        for (int x = 0; x < screenWidth; x += tileSize) {
+            destRect = { x, y, tileSize, tileSize };
+            SDL_RenderCopy(renderer, tileTexture, &srcRect, &destRect);
+        }
+    }
+}
+
 int main(int argc, char* argv[]) {
     SDL_Init(SDL_INIT_VIDEO);
     SDL_Window* window = SDL_CreateWindow("Arrow Key Movement", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    SDL_Texture* texture1 = IMG_LoadTexture(renderer,"png_file/main_char/main_right.png");
-    SDL_Texture* texture2 = IMG_LoadTexture(renderer,"png_file/main_char/main_left.png");
-    SDL_Texture* texture3 = IMG_LoadTexture(renderer,"png_file/main_char/main_up.png");
-    SDL_Texture* texture4 = IMG_LoadTexture(renderer,"png_file/main_char/main_down.png");
+
     bool running = true;
     SDL_Event event;
 
     SDL_Rect rect = { SCREEN_WIDTH / 2 - 25, SCREEN_HEIGHT / 2 - 25, 50, 50 };
-    Movement movement(5);
+    Movement movement(10);
     MainChar mainChar(100);
 
     vector<Obstacle> obstacles = {
@@ -28,7 +40,6 @@ int main(int argc, char* argv[]) {
         Obstacle(0, 568, 800, 32)
     };
     bool isLeft=false;
-    bool isRight=true;
     bool isUp=false;
     bool isDown=false;
     while (running) {
@@ -41,10 +52,8 @@ int main(int argc, char* argv[]) {
                 switch (event.key.keysym.sym) {
                     case SDLK_LEFT:
                         isLeft = true;
-                        isRight = false;
                         break;
                     case SDLK_RIGHT:
-                        isRight = true;
                         isLeft = false;
                         break;
                     case SDLK_UP:
@@ -70,25 +79,18 @@ int main(int argc, char* argv[]) {
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
 
+        renderTiledBackground(renderer, 800, 600);
+
         for (const auto& obstacle : obstacles) {
             obstacle.render(renderer);
         }
-        if(isRight){
-            SDL_RenderCopy(renderer,texture1,NULL,&rect);
-        } else if (isLeft) {
-            SDL_RenderCopy(renderer,texture2,NULL,&rect);
-        }
-        if(isUp){
-            SDL_RenderCopy(renderer,texture3,NULL,&rect);
-        } else if(isDown) {
-            SDL_RenderCopy(renderer,texture4,NULL,&rect);
-        }
+        mainChar.displayMain(renderer,rect,isLeft,isUp,isDown);
 
         mainChar.renderHealthBar(renderer);
 
         SDL_RenderPresent(renderer);
 
-        SDL_Delay(16); // Giới hạn tốc độ khung hình khoảng 60 FPS
+        SDL_Delay(16);
 
     }
 
