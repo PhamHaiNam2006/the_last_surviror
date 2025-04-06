@@ -8,7 +8,7 @@
 using namespace std;
 
 void renderTiledBackground(SDL_Renderer* renderer, int screenWidth, int screenHeight) {
-    int tileSize = 16; // Your tile is 16x16
+    int tileSize = 16;
     SDL_Texture* tileTexture = IMG_LoadTexture(renderer,"png_file/environment/background_rock.png");
 
     SDL_Rect srcRect = { 0, 0, tileSize, tileSize };
@@ -30,9 +30,9 @@ int main(int argc, char* argv[]) {
     bool running = true;
     SDL_Event event;
 
-    SDL_Rect rect = { SCREEN_WIDTH / 2 - 25, SCREEN_HEIGHT / 2 - 25, 50, 50 };
+    SDL_Rect rect = { SCREEN_WIDTH / 2 - 25, SCREEN_HEIGHT / 2 - 25, 64, 64 };
     Movement movement(10);
-    MainChar mainChar(100);
+    MainChar player(100);
 
     vector<Obstacle> obstacles = {
         Obstacle(0, 0, 32, 600),
@@ -42,6 +42,8 @@ int main(int argc, char* argv[]) {
     bool isLeft=false;
     bool isUp=false;
     bool isDown=false;
+    player.facingRight = true;
+    int xPos,yPos;
     while (running) {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
@@ -52,9 +54,11 @@ int main(int argc, char* argv[]) {
                 switch (event.key.keysym.sym) {
                     case SDLK_LEFT:
                         isLeft = true;
+                        player.facingRight = false;
                         break;
                     case SDLK_RIGHT:
                         isLeft = false;
+                        player.facingRight = true;
                         break;
                     case SDLK_UP:
                         isUp = true;
@@ -64,6 +68,9 @@ int main(int argc, char* argv[]) {
                         isDown = true;
                         isUp = false;
                         break;
+                }
+                if (event.key.keysym.sym == SDLK_SPACE) {
+                    player.triggerSlash();
                 }
             }
             if (event.type == SDL_KEYUP) {
@@ -75,6 +82,7 @@ int main(int argc, char* argv[]) {
             }
         }
         movement.update(rect, obstacles);
+        player.getpos(rect.x,rect.y);
 
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
@@ -84,18 +92,20 @@ int main(int argc, char* argv[]) {
         for (const auto& obstacle : obstacles) {
             obstacle.render(renderer);
         }
-        mainChar.displayMain(renderer,rect,isLeft,isUp,isDown);
+        player.displayMain(renderer,rect,isLeft,isUp,isDown);
+        player.renderSlash(renderer);
 
-        mainChar.renderHealthBar(renderer);
+        player.renderHealthBar(renderer);
 
         SDL_RenderPresent(renderer);
 
         SDL_Delay(16);
 
     }
-
+    SDL_DestroyTexture(player.swordTexture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
+    IMG_Quit();
     SDL_Quit();
     return 0;
 }

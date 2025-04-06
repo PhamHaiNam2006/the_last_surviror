@@ -13,7 +13,20 @@ public:
     int getHealth() const { return health; }
     void reduceHealth(int amount) { health = (health - amount > 0) ? health - amount : 0; }
     void displayMain(SDL_Renderer *renderer, SDL_Rect rect, bool isLeft, bool isUp, bool isDown) ;
+
+    int width, height;
+    bool facingRight;
+
+    bool showSlash;
+    Uint32 slashStartTime;
+    SDL_Texture* swordTexture;
+
+    void render(SDL_Renderer* renderer);
+    void renderSlash(SDL_Renderer* renderer);
+    void triggerSlash();
+    void getpos(int &dx,int &dy);
 private:
+    int x, y;
     SDL_Rect rect;
     int health;
 };

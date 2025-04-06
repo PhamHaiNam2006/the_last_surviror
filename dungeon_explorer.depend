@@ -24,7 +24,7 @@
 1743124304 e:\learning material\code blocks\dungeon_explorer\obstacle.h
 	<SDL.h>
 
-1743564759 source:e:\learning_material\code_blocks\dungeon_explorer\main.cpp
+1743950924 source:e:\learning_material\code_blocks\dungeon_explorer\main.cpp
 	<SDL.h>
 	<vector>
 	"movement.h"
@@ -32,7 +32,7 @@
 	"obstacle.h"
 	"character.h"
 
-1743502905 e:\learning_material\code_blocks\dungeon_explorer\movement.h
+1743950924 e:\learning_material\code_blocks\dungeon_explorer\movement.h
 	<SDL.h>
 	<vector>
 	"obstacle.h"
@@ -44,7 +44,7 @@
 	<SDL.h>
 	<SDL_image.h>
 
-1743124818 source:e:\learning_material\code_blocks\dungeon_explorer\movement.cpp
+1743950924 source:e:\learning_material\code_blocks\dungeon_explorer\movement.cpp
 	"movement.h"
 
 1743945333 source:e:\learning_material\code_blocks\dungeon_explorer\obstacle.cpp
@@ -55,13 +55,14 @@
 
 1743499791 source:e:\learning_material\code_blocks\dungeon_explorer\main_char.cpp
 
-1743945239 source:e:\learning_material\code_blocks\dungeon_explorer\character.cpp
+1743950638 source:e:\learning_material\code_blocks\dungeon_explorer\character.cpp
 	"character.h"
+	"movement.h"
 	<iostream>
 	<SDL.h>
 	<SDL_image.h>
 
-1743945239 e:\learning_material\code_blocks\dungeon_explorer\character.h
+1743950638 e:\learning_material\code_blocks\dungeon_explorer\character.h
 	"movement.h"
 	<SDL.h>
 

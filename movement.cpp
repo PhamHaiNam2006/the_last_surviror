@@ -1,6 +1,6 @@
 #include "movement.h"
 
-Movement::Movement(int speed) : speed(speed), dx(0), dy(0) {}
+Movement::Movement(int speed) : speed(speed), dx(), dy() {}
 
 void Movement::handleEvent(const SDL_Event& event) {
     if (event.type == SDL_KEYDOWN) {
@@ -42,3 +42,4 @@ void Movement::update(SDL_Rect& rect, const std::vector<Obstacle>& obstacles) {
         }
     }
 }
+
