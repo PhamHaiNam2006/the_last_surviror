@@ -1,6 +1,8 @@
 #include <SDL.h>
+#include <SDL_mixer.h>
 #include <vector>
 #include <map>
+#include <iostream>
 #include "movement.h"
 #include "defs.h"
 #include "obstacle.h"
@@ -44,6 +46,7 @@ int main(int argc, char* argv[]) {
     bool isUp=false;
     bool isDown=false;
     player.facingRight = true;
+    bool moving=true;
     int n=1;
     while (running) {
         while (SDL_PollEvent(&event)) {
@@ -72,6 +75,8 @@ int main(int argc, char* argv[]) {
                 }
                 if (event.key.keysym.sym == SDLK_SPACE) {
                     player.triggerSlash();
+                    moving=false;
+                    SDL_Delay(200);
                 }
             }
             if (event.type == SDL_KEYUP) {
@@ -79,10 +84,13 @@ int main(int argc, char* argv[]) {
                 switch (event.key.keysym.sym) {
                     case SDLK_UP: isUp = false; break;
                     case SDLK_DOWN: isDown = false; break;
+                    case SDLK_SPACE: moving = true; break;
                 }
             }
         }
-        movement.update(rect, obstacles[n], n);
+        if(moving){
+            movement.update(rect, obstacles[n], n);
+        }
         player.getpos(rect.x,rect.y);
 
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
@@ -94,6 +102,7 @@ int main(int argc, char* argv[]) {
             obstacle.render(renderer);
         }
         player.displayMain(renderer,rect,isLeft,isUp,isDown);
+
         player.renderSlash(renderer);
 
         player.renderHealthBar(renderer);
@@ -101,6 +110,7 @@ int main(int argc, char* argv[]) {
         SDL_RenderPresent(renderer);
 
         SDL_Delay(16);
+
 
     }
     SDL_DestroyTexture(player.swordTexture);
