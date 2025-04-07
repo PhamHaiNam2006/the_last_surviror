@@ -1,5 +1,6 @@
 #include <SDL.h>
 #include <vector>
+#include <map>
 #include "movement.h"
 #include "defs.h"
 #include "obstacle.h"
@@ -31,19 +32,19 @@ int main(int argc, char* argv[]) {
     SDL_Event event;
 
     SDL_Rect rect = { SCREEN_WIDTH / 2 - 25, SCREEN_HEIGHT / 2 - 25, 64, 64 };
-    Movement movement(10);
+    Movement movement(25);
     MainChar player(100);
 
-    vector<Obstacle> obstacles = {
-        Obstacle(0, 0, 32, 600),
-        Obstacle(0, 0, 800, 32),
-        Obstacle(0, 568, 800, 32)
+    map<int,vector<Obstacle>> obstacles = {
+        {1, {Obstacle(0, 0, 32, 600),Obstacle(0, 0, 800, 32),Obstacle(0, 568, 800, 32)}},
+        {2, {Obstacle(0, 0, 800, 32),Obstacle(0, 568, 800, 32)}},
+        {3, {Obstacle(0, 0, 800, 32),Obstacle(0, 568, 800, 32),Obstacle(768, 0, 32, 600)}}
     };
     bool isLeft=false;
     bool isUp=false;
     bool isDown=false;
     player.facingRight = true;
-    int xPos,yPos;
+    int n=1;
     while (running) {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
@@ -81,7 +82,7 @@ int main(int argc, char* argv[]) {
                 }
             }
         }
-        movement.update(rect, obstacles);
+        movement.update(rect, obstacles[n], n);
         player.getpos(rect.x,rect.y);
 
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
@@ -89,7 +90,7 @@ int main(int argc, char* argv[]) {
 
         renderTiledBackground(renderer, 800, 600);
 
-        for (const auto& obstacle : obstacles) {
+        for (const auto& obstacle : obstacles[n]) {
             obstacle.render(renderer);
         }
         player.displayMain(renderer,rect,isLeft,isUp,isDown);

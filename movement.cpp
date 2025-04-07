@@ -23,14 +23,14 @@ bool checkCollision(const SDL_Rect& a, const SDL_Rect& b) {
             a.y < b.y + b.h && a.y + a.h > b.y);
 }
 
-void Movement::update(SDL_Rect& rect, const std::vector<Obstacle>& obstacles) {
+void Movement::update(SDL_Rect& rect, const std::vector<Obstacle>& obstacles, int &n) {
     rect.x += dx;
     rect.y += dy;
 
     // Wrap-around effect when touching screen boundaries
-    if (rect.x < 0) rect.x = 800 - rect.w;
+    if (rect.x < 0) rect.x = 800 - rect.w, n--;
     if (rect.y < 0) rect.y = 600 - rect.h;
-    if (rect.x + rect.w > 800) rect.x = 0;
+    if (rect.x + rect.w > 800) rect.x = 0, n++;
     if (rect.y + rect.h > 600) rect.y = 0;
 
     // Collision with obstacles
