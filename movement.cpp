@@ -23,7 +23,7 @@ bool checkCollision(const SDL_Rect& a, const SDL_Rect& b) {
             a.y < b.y + b.h && a.y + a.h > b.y);
 }
 
-void Movement::update(SDL_Rect& rect, const std::vector<Obstacle>& obstacles, int &n) {
+void Movement::update(SDL_Rect& rect, const std::vector<Obstacle>& obstacles, int &n, int &amount) {
     rect.x += dx;
     rect.y += dy;
 

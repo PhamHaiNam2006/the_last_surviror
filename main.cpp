@@ -35,12 +35,12 @@ int main(int argc, char* argv[]) {
 
     SDL_Rect rect = { SCREEN_WIDTH / 2 - 25, SCREEN_HEIGHT / 2 - 25, 64, 64 };
     Movement movement(25);
-    MainChar player(100);
+    MainChar player(120);
 
     map<int,vector<Obstacle>> obstacles = {
-        {1, {Obstacle(0, 0, 32, 600),Obstacle(0, 0, 800, 32),Obstacle(0, 568, 800, 32)}},
-        {2, {Obstacle(0, 0, 800, 32),Obstacle(0, 568, 800, 32)}},
-        {3, {Obstacle(0, 0, 800, 32),Obstacle(0, 568, 800, 32),Obstacle(768, 0, 32, 600)}}
+        {1, {Obstacle(0, 0, 32, 600,0),Obstacle(0, 0, 800, 32,0),Obstacle(0, 568, 800, 32,0)}},
+        {2, {Obstacle(0, 0, 800, 32,0),Obstacle(0, 568, 800, 32,0)}},
+        {3, {Obstacle(0, 0, 800, 32,0),Obstacle(0, 568, 800, 32,0),Obstacle(768, 0, 32, 600,0)}}
     };
     bool isLeft=false;
     bool isUp=false;
@@ -48,10 +48,12 @@ int main(int argc, char* argv[]) {
     player.facingRight = true;
     bool moving=true;
     int n=1;
+    int amount;
     SDL_Init(SDL_INIT_AUDIO);
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
-    Mix_Music* sound = Mix_LoadMUS("back_ground.ogg");
-    Mix_PlayMusic(sound,-1);
+    Mix_Music* back_ground_music = Mix_LoadMUS("mp3_and_ogg_file/back_ground.ogg");
+    Mix_Chunk* sword_slashing = Mix_LoadWAV("mp3_and_ogg_file/sword_attack.mp3");
+    //Mix_PlayMusic(back_ground_music,-1);
     while (running) {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
@@ -80,6 +82,7 @@ int main(int argc, char* argv[]) {
                 if (event.key.keysym.sym == SDLK_SPACE) {
                     player.triggerSlash();
                     moving=false;
+                    //Mix_PlayChannel(-1,sword_slashing,0);
                     SDL_Delay(200);
                 }
             }
@@ -93,7 +96,7 @@ int main(int argc, char* argv[]) {
             }
         }
         if(moving){
-            movement.update(rect, obstacles[n], n);
+            movement.update(rect, obstacles[n], n, amount);
         }
         player.getpos(rect.x,rect.y);
 
@@ -110,6 +113,10 @@ int main(int argc, char* argv[]) {
         player.renderSlash(renderer);
 
         player.renderHealthBar(renderer);
+
+        player.reduceHealth(amount);
+
+        player.noHealth(running);
 
         SDL_RenderPresent(renderer);
 

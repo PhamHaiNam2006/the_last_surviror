@@ -31,23 +31,21 @@ void MainChar::getpos(int &dx,int &dy){
     x=dx;y=dy;
 }
 
-void MainChar::displayMain(SDL_Renderer *renderer, SDL_Rect rect, bool isLeft, bool isUp, bool isDown) {
-    SDL_Texture* texture1 = IMG_LoadTexture(renderer,"png_file/main_char/main_right.png");
-    SDL_Texture* texture2 = IMG_LoadTexture(renderer,"png_file/main_char/main_left.png");
-    SDL_Texture* texture3 = IMG_LoadTexture(renderer,"png_file/main_char/main_up.png");
-    SDL_Texture* texture4 = IMG_LoadTexture(renderer,"png_file/main_char/main_down.png");
-    if(isLeft){
-        SDL_RenderCopy(renderer,texture2,NULL,&rect);
-    } else {
-        SDL_RenderCopy(renderer,texture1,NULL,&rect);
+void MainChar::displayMain(SDL_Renderer* renderer, SDL_Rect rect, bool isLeft, bool isUp, bool isDown) {
+    const char* path = "png_file/main_char/main_right.png";
+    if (isUp) {
+        path = "png_file/main_char/main_up.png";
+    } else if (isDown) {
+        path = "png_file/main_char/main_down.png";
+    } else if (isLeft) {
+        path = "png_file/main_char/main_left.png";
     }
-    if(isUp){
-        SDL_RenderCopy(renderer,texture3,NULL,&rect);
-    } else if(isDown) {
-        SDL_RenderCopy(renderer,texture4,NULL,&rect);
+    SDL_Texture* texture = IMG_LoadTexture(renderer, path);
+    if (texture) {
+        SDL_RenderCopy(renderer, texture, nullptr, &rect);
+        SDL_DestroyTexture(texture);
     }
 }
-
 void MainChar::triggerSlash() {
     showSlash = true;
     slashStartTime = SDL_GetTicks();

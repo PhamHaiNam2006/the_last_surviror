@@ -11,8 +11,13 @@ public:
 
     SDL_Rect& getRect() { return rect; }
     int getHealth() const { return health; }
-    void reduceHealth(int amount) { health = (health - amount > 0) ? health - amount : 0; }
-    void displayMain(SDL_Renderer *renderer, SDL_Rect rect, bool isLeft, bool isUp, bool isDown) ;
+    void reduceHealth(int &amount) { health = (health - amount > 0) ? health - amount : 0;amount=0; }
+    void noHealth(bool &running) {
+        if(health==0){
+            running=false;
+        }
+    }
+    void displayMain(SDL_Renderer *renderer, SDL_Rect rect, bool isLeft, bool isUp, bool isDown);
 
     int width, height;
     bool facingRight;

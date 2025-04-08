@@ -1,8 +1,13 @@
 #include "obstacle.h"
 #include <SDL_image.h>
 
-Obstacle::Obstacle(int x, int y, int w, int h) {
-    rect = {x, y, w, h};
+Obstacle::Obstacle(int x, int y, int w, int h, bool it) {
+    if (!it){
+        rect = {x, y, w, h};
+    } else {
+        rect2 = {x, y, w, h};
+    }
+
 }
 
 void Obstacle::render(SDL_Renderer* renderer) const {
@@ -20,6 +25,10 @@ void Obstacle::render(SDL_Renderer* renderer) const {
         }
         SDL_DestroyTexture(texture);
     }
+}
+
+void Obstacle::health_render(SDL_Renderer* renderer) const{
+
 }
 
 SDL_Rect Obstacle::getRect() const {
