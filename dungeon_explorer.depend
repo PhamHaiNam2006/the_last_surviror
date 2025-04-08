@@ -24,10 +24,12 @@
 1743124304 e:\learning material\code blocks\dungeon_explorer\obstacle.h
 	<SDL.h>
 
-1744006621 source:e:\learning_material\code_blocks\dungeon_explorer\main.cpp
+1744109512 source:e:\learning_material\code_blocks\dungeon_explorer\main.cpp
 	<SDL.h>
+	<SDL_mixer.h>
 	<vector>
 	<map>
+	<iostream>
 	"movement.h"
 	"defs.h"
 	"obstacle.h"

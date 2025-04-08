@@ -48,6 +48,10 @@ int main(int argc, char* argv[]) {
     player.facingRight = true;
     bool moving=true;
     int n=1;
+    SDL_Init(SDL_INIT_AUDIO);
+    Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
+    Mix_Music* sound = Mix_LoadMUS("back_ground.ogg");
+    Mix_PlayMusic(sound,-1);
     while (running) {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
