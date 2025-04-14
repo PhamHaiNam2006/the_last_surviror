@@ -52,7 +52,7 @@ void MainChar::triggerSlash(int moving) {
 }
 
 void MainChar::renderSlash(SDL_Renderer* renderer) {
-    swordTexture = IMG_LoadTexture(renderer,"png_file/main_char/sword_slashing.png");
+    swordTexture = IMG_LoadTexture(renderer, "png_file/main_char/sword_slashing.png");
     if (!showSlash || !swordTexture) return;
 
     const int swordWidth = 64;
@@ -64,20 +64,12 @@ void MainChar::renderSlash(SDL_Renderer* renderer) {
     int verticalOffset = (swordHeight - height) / 2;
 
     if (facingRight) {
-        destRect = {
-            x + width,
-            y - verticalOffset,
-            swordWidth,
-            swordHeight
-        };
+        destRect = { x + width, y - verticalOffset, swordWidth, swordHeight };
+        slashHitbox = destRect;
         SDL_RenderCopyEx(renderer, swordTexture, &srcRect, &destRect, 0, nullptr, SDL_FLIP_NONE);
     } else {
-        destRect = {
-            x - swordWidth,
-            y - verticalOffset,
-            swordWidth,
-            swordHeight
-        };
+        destRect = { x - swordWidth, y - verticalOffset, swordWidth, swordHeight };
+        slashHitbox = destRect;
         SDL_RenderCopyEx(renderer, swordTexture, &srcRect, &destRect, 0, nullptr, SDL_FLIP_HORIZONTAL);
     }
 
@@ -85,6 +77,11 @@ void MainChar::renderSlash(SDL_Renderer* renderer) {
         showSlash = false;
     }
 }
+
+SDL_Rect MainChar::getSlashHitbox() const {
+    return slashHitbox;
+}
+
 
 void MainChar::reduceHealth(int &amount) {
     Uint32 currentTime = SDL_GetTicks();

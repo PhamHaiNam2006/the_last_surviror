@@ -35,7 +35,8 @@ void Movement::update(SDL_Rect& rect, const std::vector<Obstacle>& obstacles, in
 
     // Collision with obstacles
     for (const auto& obstacle : obstacles) {
-        if(obstacle.redcube()){
+        if (obstacle.isDestroyed()) continue;
+        if (obstacle.redcube()){
             if (checkCollision(rect, obstacle.getRect())) {
             rect.x -= dx;
             rect.y -= dy;

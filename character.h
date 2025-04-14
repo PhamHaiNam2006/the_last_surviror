@@ -17,19 +17,21 @@ public:
             running=false;
         }
     }
+    SDL_Rect getSlashHitbox() const;
+    bool isSlashing() const { return showSlash; }
+    void renderSlash(SDL_Renderer* renderer);
+    void triggerSlash(int moving);
+    bool showSlash;
+    Uint32 slashStartTime;
+    SDL_Texture* swordTexture;
 
     void displayMain(SDL_Renderer *renderer, SDL_Rect rect, bool isLeft, bool isUp, bool isDown);
 
     int width, height;
     bool facingRight;
 
-    bool showSlash;
-    Uint32 slashStartTime;
-    SDL_Texture* swordTexture;
-
     void render(SDL_Renderer* renderer);
-    void renderSlash(SDL_Renderer* renderer);
-    void triggerSlash(int moving);
+
     void getpos(int &dx,int &dy);
 private:
     Uint32 lastDamageTime;
@@ -37,5 +39,6 @@ private:
     int x, y;
     SDL_Rect rect;
     int health;
+    SDL_Rect slashHitbox;
 };
 #endif

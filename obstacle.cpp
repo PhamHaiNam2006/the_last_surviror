@@ -7,6 +7,7 @@ Obstacle::Obstacle(int x, int y, int w, int h, bool it) {
 }
 
 void Obstacle::render(SDL_Renderer* renderer) const {
+    if (destroyed) return;
     SDL_Surface* surface = IMG_Load("png_file/environment/wall.png");
 
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);

@@ -12,9 +12,12 @@ public:
     bool redcube() const {
         return obs;
     }
+    bool isDestroyed() const { return destroyed; }
+    void destroy() { destroyed = true; }
 private:
     SDL_Rect rect;
     bool obs;
+    bool destroyed = false;
 };
 
 #endif

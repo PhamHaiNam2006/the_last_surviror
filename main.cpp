@@ -111,6 +111,15 @@ int main(int argc, char* argv[]) {
 
         player.renderSlash(renderer);
 
+        if (player.isSlashing()) {
+            SDL_Rect slashHitbox = player.getSlashHitbox();
+            for (auto& obs : obstacles[n]) {
+                if (!obs.isDestroyed() && obs.redcube() && checkCollision(slashHitbox, obs.getRect())) {
+                    obs.destroy();
+        }
+    }
+}
+
         player.renderHealthBar(renderer);
 
         player.reduceHealth(amount);
