@@ -38,7 +38,6 @@
 		<Unit filename="game.h" />
 		<Unit filename="main.cpp" />
 		<Unit filename="main_char.cpp" />
-		<Unit filename="main_char.h" />
 		<Unit filename="movement.cpp" />
 		<Unit filename="movement.h" />
 		<Unit filename="obstacle.cpp" />

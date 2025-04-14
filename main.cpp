@@ -35,10 +35,10 @@ int main(int argc, char* argv[]) {
 
     SDL_Rect rect = { SCREEN_WIDTH / 2 - 25, SCREEN_HEIGHT / 2 - 25, 64, 64 };
     Movement movement(25);
-    MainChar player(120);
+    MainChar player(100);
 
     map<int,vector<Obstacle>> obstacles = {
-        {1, {Obstacle(0, 0, 32, 600,0),Obstacle(0, 0, 800, 32,0),Obstacle(0, 568, 800, 32,0)}},
+        {1, {Obstacle(0, 0, 32, 600,0),Obstacle(0, 0, 800, 32,0),Obstacle(0, 568, 800, 32,0),Obstacle(50,50,50,50,1)}},
         {2, {Obstacle(0, 0, 800, 32,0),Obstacle(0, 568, 800, 32,0)}},
         {3, {Obstacle(0, 0, 800, 32,0),Obstacle(0, 568, 800, 32,0),Obstacle(768, 0, 32, 600,0)}}
     };
@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
     player.facingRight = true;
     bool moving=true;
     int n=1;
-    int amount;
+    int amount=0;
     SDL_Init(SDL_INIT_AUDIO);
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
     Mix_Music* back_ground_music = Mix_LoadMUS("mp3_and_ogg_file/back_ground.ogg");
@@ -80,10 +80,9 @@ int main(int argc, char* argv[]) {
                         break;
                 }
                 if (event.key.keysym.sym == SDLK_SPACE) {
-                    player.triggerSlash();
+                    player.triggerSlash(moving);
                     moving=false;
                     //Mix_PlayChannel(-1,sword_slashing,0);
-                    SDL_Delay(200);
                 }
             }
             if (event.type == SDL_KEYUP) {

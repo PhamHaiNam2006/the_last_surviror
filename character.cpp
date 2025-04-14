@@ -15,7 +15,7 @@ void MainChar::renderHealthBar(SDL_Renderer* renderer) const {
     SDL_RenderFillRect(renderer, &healthBar);
 }
 
-MainChar::MainChar(int health) : health(health) {
+MainChar::MainChar(int health) : health(health), lastDamageTime(0), damageCooldown(1000){
     width = 64;
     height = 64;
     x = 800 / 2 - 32;
@@ -46,7 +46,7 @@ void MainChar::displayMain(SDL_Renderer* renderer, SDL_Rect rect, bool isLeft, b
         SDL_DestroyTexture(texture);
     }
 }
-void MainChar::triggerSlash() {
+void MainChar::triggerSlash(int moving) {
     showSlash = true;
     slashStartTime = SDL_GetTicks();
 }
@@ -83,5 +83,16 @@ void MainChar::renderSlash(SDL_Renderer* renderer) {
 
     if (SDL_GetTicks() - slashStartTime > 200) {
         showSlash = false;
+    }
+}
+
+void MainChar::reduceHealth(int &amount) {
+    Uint32 currentTime = SDL_GetTicks();
+    if (currentTime - lastDamageTime >= damageCooldown && amount > 0) {
+        health = (health - amount > 0) ? health - amount : 0;
+        lastDamageTime = currentTime;
+        amount = 0;
+    } else {
+        amount = 0;
     }
 }
