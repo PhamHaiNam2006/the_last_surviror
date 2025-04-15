@@ -1,5 +1,6 @@
 #include <SDL.h>
 #include <SDL_mixer.h>
+#include <SDL_ttf.h>
 #include <vector>
 #include <map>
 #include <iostream>
@@ -9,6 +10,37 @@
 #include "character.h"
 
 using namespace std;
+
+enum class GameState {
+    MENU,
+    PLAYING
+};
+
+void renderStartScreen(SDL_Renderer* renderer, TTF_Font* font) {
+    SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
+    SDL_RenderClear(renderer);
+
+    SDL_Color white = {255, 255, 255, 255};
+    SDL_Surface* textSurface = TTF_RenderText_Solid(font, "Start Game", white);
+    SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+
+    int btnW = 200, btnH = 60;
+    SDL_Rect buttonRect = {
+        (SCREEN_WIDTH - btnW) / 2,
+        (SCREEN_HEIGHT - btnH) / 2,
+        btnW,
+        btnH
+    };
+
+    SDL_SetRenderDrawColor(renderer, 70, 70, 200, 255);
+    SDL_RenderFillRect(renderer, &buttonRect);
+    SDL_RenderCopy(renderer, textTexture, nullptr, &buttonRect);
+
+    SDL_FreeSurface(textSurface);
+    SDL_DestroyTexture(textTexture);
+    SDL_RenderPresent(renderer);
+}
+
 
 void renderTiledBackground(SDL_Renderer* renderer, int screenWidth, int screenHeight) {
     int tileSize = 16;
@@ -40,7 +72,7 @@ int main(int argc, char* argv[]) {
     map<int,vector<Obstacle>> obstacles = {
         {1, {Obstacle(0, 0, 32, 600,0),Obstacle(0, 0, 800, 32,0),Obstacle(0, 568, 800, 32,0),Obstacle(50,50,50,50,1)}},
         {2, {Obstacle(0, 0, 800, 32,0),Obstacle(0, 568, 800, 32,0)}},
-        {3, {Obstacle(0, 0, 800, 32,0),Obstacle(0, 568, 800, 32,0),Obstacle(768, 0, 32, 600,0)}}
+        {3, {Obstacle(0, 0, 800, 32,0),Obstacle(0, 568, 800, 32,0),Obstacle(768, 0, 32, 600,0),Obstacle(400,300,50,50,1)}}
     };
     bool isLeft=false;
     bool isUp=false;
@@ -49,6 +81,10 @@ int main(int argc, char* argv[]) {
     bool moving=true;
     int n=1;
     int amount=0;
+    GameState gameState = GameState::MENU;
+    TTF_Init();
+    TTF_Font* font = TTF_OpenFont("pixel_font.ttf", 24);
+
     SDL_Init(SDL_INIT_AUDIO);
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
     Mix_Music* back_ground_music = Mix_LoadMUS("mp3_and_ogg_file/back_ground.ogg");
@@ -59,6 +95,17 @@ int main(int argc, char* argv[]) {
             if (event.type == SDL_QUIT) {
                 running = false;
             }
+
+            if (gameState == GameState::MENU && event.type == SDL_MOUSEBUTTONDOWN) {
+                int x = event.button.x;
+                int y = event.button.y;
+                SDL_Rect startButton = {(SCREEN_WIDTH - 200) / 2, (SCREEN_HEIGHT - 60) / 2, 200, 60};
+                if (x >= startButton.x && x <= startButton.x + startButton.w &&
+                    y >= startButton.y && y <= startButton.y + startButton.h) {
+                    gameState = GameState::PLAYING;
+                }
+            }
+
             if (event.type == SDL_KEYDOWN) {
                 movement.handleEvent(event);
                 switch (event.key.keysym.sym) {
@@ -93,8 +140,11 @@ int main(int argc, char* argv[]) {
                     case SDLK_SPACE: moving = true; break;
                 }
             }
-        }
-        if(moving){
+            if (gameState == GameState::MENU) {
+                renderStartScreen(renderer, font);
+                continue;
+            } else {
+                if(moving){
             movement.update(rect, obstacles[n], n, amount);
         }
         player.getpos(rect.x,rect.y);
@@ -116,9 +166,9 @@ int main(int argc, char* argv[]) {
             for (auto& obs : obstacles[n]) {
                 if (!obs.isDestroyed() && obs.redcube() && checkCollision(slashHitbox, obs.getRect())) {
                     obs.destroy();
+                }
+            }
         }
-    }
-}
 
         player.renderHealthBar(renderer);
 
@@ -129,9 +179,14 @@ int main(int argc, char* argv[]) {
         SDL_RenderPresent(renderer);
 
         SDL_Delay(16);
+            }
+        }
+
 
 
     }
+    TTF_CloseFont(font);
+    TTF_Quit();
     SDL_DestroyTexture(player.swordTexture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);

@@ -40,7 +40,7 @@ void Movement::update(SDL_Rect& rect, const std::vector<Obstacle>& obstacles, in
             if (checkCollision(rect, obstacle.getRect())) {
             rect.x -= dx;
             rect.y -= dy;
-            amount=20;
+            amount=30;
             break;
             }
         }
