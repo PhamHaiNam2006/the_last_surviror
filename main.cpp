@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <iostream>
+#include <chrono>
 #include "defs.h"
 
 using namespace std;
@@ -11,6 +12,12 @@ using namespace std;
 enum class GameState {
     MENU,
     PLAYING
+};
+
+enum class PlayerState {
+    IDLE,
+    WALKING,
+    DEAD
 };
 
 void renderStartScreen(SDL_Renderer* renderer, TTF_Font* font) {
@@ -59,6 +66,11 @@ int main(int argc, char* argv[]) {
     SDL_Window* window = SDL_CreateWindow(WINDOW_TITLE, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
+    SDL_Texture* playerTexture = IMG_LoadTexture(renderer, "png_file/main_char/warrior.png");
+    SDL_Rect playerSrc = { 0, 0, 12, 16 };
+    SDL_Rect playerDest = { SCREEN_WIDTH / 2 - 16, SCREEN_HEIGHT / 2 - 16, 24, 32 };
+
+
     bool running = true;
     SDL_Event event;
 
@@ -67,7 +79,15 @@ int main(int argc, char* argv[]) {
     TTF_Init();
     TTF_Font* font = TTF_OpenFont("pixel_font.ttf", 24);
 
-    SDL_Rect rect = { SCREEN_WIDTH / 2 - 25, SCREEN_HEIGHT / 2 - 25, 64, 64 };
+    PlayerState playerState = PlayerState::IDLE;
+    bool facingLeft = false;
+    int currentFrame = 0;
+    Uint32 lastAnimTime = 0;
+    const Uint32 animDelay = 100;
+
+    SDL_Rect playerRect = { SCREEN_WIDTH / 2 - 25, SCREEN_HEIGHT / 2 - 25, 32, 32 };
+    Uint32 lastMoveTime = 0;
+    const Uint32 moveCooldown = 200;
     while (running){
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
@@ -83,12 +103,47 @@ int main(int argc, char* argv[]) {
                     gameState = GameState::PLAYING;
                 }
             }
+            const Uint8* keystates = SDL_GetKeyboardState(NULL);
+            Uint32 currentTime = SDL_GetTicks();
+
+            if (gameState == GameState::PLAYING && currentTime - lastMoveTime >= moveCooldown) {
+                bool moved = false;
+                if (keystates[SDL_SCANCODE_UP]) {
+                    playerRect.y -= 32;
+                    playerDest.y -= 32;
+                    moved = true;
+                } else if (keystates[SDL_SCANCODE_DOWN]) {
+                    playerRect.y += 32;
+                    playerDest.y += 32;
+                    moved = true;
+                } else if (keystates[SDL_SCANCODE_LEFT]) {
+                    playerRect.x -= 32;
+                    playerDest.x -= 32;
+                    moved = true;
+                } else if (keystates[SDL_SCANCODE_RIGHT]) {
+                    playerRect.x += 32;
+                    playerDest.x += 32;
+                    moved = true;
+                }
+
+                if (moved) {
+                    lastMoveTime = currentTime;
+                    playerSrc.x = (playerSrc.x + 12) % (12 * 13);
+                }
+            }
             if (gameState == GameState::MENU) {
                 renderStartScreen(renderer, font);
             } else if (gameState == GameState::PLAYING) {
                 SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
                 SDL_RenderClear(renderer);
                 renderTiledBackground(renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+                SDL_SetRenderDrawColor(renderer, 200, 50, 50, 255);
+                SDL_RenderFillRect(renderer, &playerRect);
+
+                SDL_RendererFlip flip = facingLeft ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
+                SDL_RenderCopyEx(renderer, playerTexture, &playerSrc, &playerDest, 0, nullptr, flip);
+
                 SDL_RenderPresent(renderer);
             }
         }
