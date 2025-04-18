@@ -5,6 +5,7 @@
 #include <map>
 #include <iostream>
 #include <chrono>
+#include <cmath>
 #include "defs.h"
 
 using namespace std;
@@ -45,7 +46,6 @@ void renderStartScreen(SDL_Renderer* renderer, TTF_Font* font) {
     SDL_RenderPresent(renderer);
 }
 
-
 void renderTiledBackground(SDL_Renderer* renderer, int screenWidth, int screenHeight) {
     int tileSize = 32;
     SDL_Texture* tileTexture = IMG_LoadTexture(renderer,"png_file/environment/background_rock.png");
@@ -70,10 +70,8 @@ int main(int argc, char* argv[]) {
     SDL_Rect playerSrc = { 0, 0, 12, 16 };
     SDL_Rect playerDest = { SCREEN_WIDTH / 2 - 16, SCREEN_HEIGHT / 2 - 16, 24, 32 };
 
-
     bool running = true;
     SDL_Event event;
-
 
     GameState gameState = GameState::MENU;
     TTF_Init();
@@ -85,10 +83,19 @@ int main(int argc, char* argv[]) {
     Uint32 lastAnimTime = 0;
     const Uint32 animDelay = 100;
 
-    SDL_Rect playerRect = { SCREEN_WIDTH / 2 - 25, SCREEN_HEIGHT / 2 - 25, 32, 32 };
+    SDL_Point playerPos = { playerDest.x, playerDest.y };
+    SDL_Point targetPos = playerPos;
+    bool isMoving = false;
+    const float moveSpeed = 0.2f;
+
     Uint32 lastMoveTime = 0;
-    const Uint32 moveCooldown = 200;
-    while (running){
+    const Uint32 moveCooldown = 100;
+
+    SDL_Rect playerHitbox = { playerDest.x-4, playerDest.y, 32, 32 };
+
+    while (running) {
+        Uint32 currentTime = SDL_GetTicks();
+
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 running = false;
@@ -103,51 +110,94 @@ int main(int argc, char* argv[]) {
                     gameState = GameState::PLAYING;
                 }
             }
-            const Uint8* keystates = SDL_GetKeyboardState(NULL);
-            Uint32 currentTime = SDL_GetTicks();
+        }
 
-            if (gameState == GameState::PLAYING && currentTime - lastMoveTime >= moveCooldown) {
-                bool moved = false;
-                if (keystates[SDL_SCANCODE_UP]) {
-                    playerRect.y -= 32;
-                    playerDest.y -= 32;
-                    moved = true;
-                } else if (keystates[SDL_SCANCODE_DOWN]) {
-                    playerRect.y += 32;
-                    playerDest.y += 32;
-                    moved = true;
-                } else if (keystates[SDL_SCANCODE_LEFT]) {
-                    playerRect.x -= 32;
-                    playerDest.x -= 32;
-                    moved = true;
-                } else if (keystates[SDL_SCANCODE_RIGHT]) {
-                    playerRect.x += 32;
-                    playerDest.x += 32;
-                    moved = true;
-                }
+        const Uint8* keystates = SDL_GetKeyboardState(NULL);
 
-                if (moved) {
-                    lastMoveTime = currentTime;
-                    playerSrc.x = (playerSrc.x + 12) % (12 * 13);
-                }
+        if (gameState == GameState::PLAYING && !isMoving && currentTime - lastMoveTime >= moveCooldown) {
+            bool moved = false;
+            if (keystates[SDL_SCANCODE_UP]) {
+                targetPos.y -= 32;
+                moved = true;
+            } else if (keystates[SDL_SCANCODE_DOWN]) {
+                targetPos.y += 32;
+                moved = true;
+            } else if (keystates[SDL_SCANCODE_LEFT]) {
+                targetPos.x -= 32;
+                facingLeft = true;
+                moved = true;
+            } else if (keystates[SDL_SCANCODE_RIGHT]) {
+                targetPos.x += 32;
+                facingLeft = false;
+                moved = true;
             }
-            if (gameState == GameState::MENU) {
-                renderStartScreen(renderer, font);
-            } else if (gameState == GameState::PLAYING) {
-                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-                SDL_RenderClear(renderer);
-                renderTiledBackground(renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
-
-                SDL_SetRenderDrawColor(renderer, 200, 50, 50, 255);
-                SDL_RenderFillRect(renderer, &playerRect);
-
-                SDL_RendererFlip flip = facingLeft ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
-                SDL_RenderCopyEx(renderer, playerTexture, &playerSrc, &playerDest, 0, nullptr, flip);
-
-                SDL_RenderPresent(renderer);
+            if (moved) {
+                isMoving = true;
+                lastMoveTime = currentTime;
+                playerState = PlayerState::WALKING;
+            } else {
+                playerState = PlayerState::IDLE;
             }
         }
+
+        if (isMoving) {
+            int dx = targetPos.x - playerPos.x;
+            int dy = targetPos.y - playerPos.y;
+            float distance = sqrt(dx * dx + dy * dy);
+            if (distance > 0) {
+                float step = moveSpeed * (SDL_GetTicks() - lastMoveTime);
+                if (distance <= step) {
+                    playerPos = targetPos;
+                    isMoving = false;
+                    playerState = PlayerState::IDLE;
+                } else {
+                    playerPos.x += static_cast<int>((dx / distance) * step);
+                    playerPos.y += static_cast<int>((dy / distance) * step);
+                }
+                playerDest.x = playerPos.x;
+                playerDest.y = playerPos.y;
+                playerHitbox.x = playerPos.x-4;
+                playerHitbox.y = playerPos.y;
+            }
+        }
+
+        Uint32 now = SDL_GetTicks();
+        if (playerState == PlayerState::WALKING && now - lastAnimTime > animDelay) {
+            currentFrame++;
+            if (currentFrame > 7) currentFrame = 2;
+            lastAnimTime = now;
+        } else if (playerState == PlayerState::IDLE) {
+            if (now - lastAnimTime > 400) {
+                currentFrame = (currentFrame == 0) ? 1 : 0;
+                lastAnimTime = now;
+            }
+        }
+
+        if (gameState == GameState::MENU) {
+            renderStartScreen(renderer, font);
+        } else if (gameState == GameState::PLAYING) {
+            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+            SDL_RenderClear(renderer);
+
+            renderTiledBackground(renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+            playerSrc.x = currentFrame * 12;
+            playerSrc.y = 0;
+            playerSrc.w = 12;
+            playerSrc.h = 16;
+
+            SDL_RendererFlip flip = facingLeft ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
+            SDL_RenderCopyEx(renderer, playerTexture, &playerSrc, &playerDest, 0, nullptr, flip);
+
+            SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+            SDL_RenderDrawRect(renderer, &playerHitbox);
+
+            SDL_RenderPresent(renderer);
+        }
+
+        SDL_Delay(16);
     }
+
     TTF_CloseFont(font);
     TTF_Quit();
     SDL_DestroyRenderer(renderer);
