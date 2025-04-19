@@ -34,6 +34,7 @@
 		</Compiler>
 		<Unit filename="defs.h" />
 		<Unit filename="main.cpp" />
+		<Unit filename="obstacle.h" />
 		<Unit filename="src/include/SDL2/SDL.h" />
 		<Unit filename="src/include/SDL2/SDL_assert.h" />
 		<Unit filename="src/include/SDL2/SDL_atomic.h" />

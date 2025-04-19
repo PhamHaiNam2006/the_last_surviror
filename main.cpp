@@ -7,6 +7,7 @@
 #include <chrono>
 #include <cmath>
 #include "defs.h"
+#include "obstacle.h"
 
 using namespace std;
 
@@ -46,33 +47,22 @@ void renderStartScreen(SDL_Renderer* renderer, TTF_Font* font) {
     SDL_RenderPresent(renderer);
 }
 
-void renderTiledBackground(SDL_Renderer* renderer, int screenWidth, int screenHeight) {
-    int tileSize = 32;
-    SDL_Texture* tileTexture = IMG_LoadTexture(renderer,"png_file/environment/background_rock.png");
-
-    SDL_Rect srcRect = { 0, 0, tileSize, tileSize };
-    SDL_Rect destRect;
-
-    for (int y = 0; y < screenHeight; y += tileSize) {
-        for (int x = 0; x < screenWidth; x += tileSize) {
-            destRect = { x, y, tileSize, tileSize };
-            SDL_RenderCopy(renderer, tileTexture, &srcRect, &destRect);
-        }
-    }
-}
-
 int main(int argc, char* argv[]) {
     SDL_Init(SDL_INIT_VIDEO);
+
     SDL_Window* window = SDL_CreateWindow(WINDOW_TITLE, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
     SDL_Texture* playerTexture = IMG_LoadTexture(renderer, "png_file/main_char/warrior.png");
+    SDL_Texture* tileTexture = IMG_LoadTexture(renderer, "png_file/environment/tiles_sewers.png");
     SDL_Rect playerSrc = { 0, 0, 12, 16 };
-    SDL_Rect playerDest = { SCREEN_WIDTH / 2 - 16, SCREEN_HEIGHT / 2 - 16, 24, 32 };
+    SDL_Rect playerDest = { SCREEN_WIDTH / 2 - 8, SCREEN_HEIGHT / 2 - 8, 24, 32 };
 
     bool running = true;
     SDL_Event event;
 
+    vector<Obstacle> obstacles = {
+        Obstacle(100, 100, 32, 96, 80)};
     GameState gameState = GameState::MENU;
     TTF_Init();
     TTF_Font* font = TTF_OpenFont("pixel_font.ttf", 24);
@@ -179,7 +169,9 @@ int main(int argc, char* argv[]) {
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
             SDL_RenderClear(renderer);
 
-            renderTiledBackground(renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
+            for (const auto& obstacle : obstacles) {
+                obstacle.render(renderer,tileTexture);
+            }
 
             playerSrc.x = currentFrame * 12;
             playerSrc.y = 0;
