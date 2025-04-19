@@ -47,6 +47,17 @@ void renderStartScreen(SDL_Renderer* renderer, TTF_Font* font) {
     SDL_RenderPresent(renderer);
 }
 
+bool willCollide(const SDL_Rect& nextPos, const std::vector<Obstacle>& obstacles) {
+    for (const auto& o : obstacles) {
+        SDL_Rect oRect = o.getRect();
+            if (SDL_HasIntersection(&nextPos, &oRect)){
+            return true;
+        }
+    }
+    return false;
+}
+
+
 int main(int argc, char* argv[]) {
     SDL_Init(SDL_INIT_VIDEO);
 
@@ -106,18 +117,23 @@ int main(int argc, char* argv[]) {
 
         if (gameState == GameState::PLAYING && !isMoving && currentTime - lastMoveTime >= moveCooldown) {
             bool moved = false;
+            SDL_Rect nextPos = playerDest;
             if (keystates[SDL_SCANCODE_UP]) {
                 targetPos.y -= 32;
+                nextPos.y -= 32;
                 moved = true;
             } else if (keystates[SDL_SCANCODE_DOWN]) {
                 targetPos.y += 32;
+                nextPos.y += 32;
                 moved = true;
             } else if (keystates[SDL_SCANCODE_LEFT]) {
                 targetPos.x -= 32;
+                nextPos.x -= 32;
                 facingLeft = true;
                 moved = true;
             } else if (keystates[SDL_SCANCODE_RIGHT]) {
                 targetPos.x += 32;
+                nextPos.x += 32;
                 facingLeft = false;
                 moved = true;
             }
@@ -127,6 +143,9 @@ int main(int argc, char* argv[]) {
                 playerState = PlayerState::WALKING;
             } else {
                 playerState = PlayerState::IDLE;
+            }
+            if (!willCollide(nextPos, obstacles)) {
+                playerDest = nextPos;
             }
         }
 
@@ -157,7 +176,8 @@ int main(int argc, char* argv[]) {
             if (currentFrame > 7) currentFrame = 2;
             lastAnimTime = now;
         } else if (playerState == PlayerState::IDLE) {
-            if (now - lastAnimTime > 400) {
+            if (now - lastAnimTime > 800) {
+                SDL_Delay(2000);
                 currentFrame = (currentFrame == 0) ? 1 : 0;
                 lastAnimTime = now;
             }
