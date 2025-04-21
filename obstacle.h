@@ -9,6 +9,7 @@ public:
     Obstacle(int x,int y, int w,int h, int type);
     void render(SDL_Renderer* renderer, SDL_Texture* texture) const;
     SDL_Rect getRect() const {return rect;}
+    int getType() const {return type;}
 
 private:
     SDL_Rect rect;

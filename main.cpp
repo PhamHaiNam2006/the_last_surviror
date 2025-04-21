@@ -6,6 +6,7 @@
 #include "defs.h"
 #include "obstacle.h"
 #include "movement.h"
+#include "map_data.h"
 
 using namespace std;
 
@@ -55,12 +56,9 @@ int main(int argc, char* argv[]) {
     SDL_Texture* tileTexture = IMG_LoadTexture(renderer, "png_file/environment/tiles_sewers.png");
 
     SDL_Rect playerSrc = { 0, 0, 12, 16 };
-    SDL_Rect playerDest = { SCREEN_WIDTH / 2 - 8, SCREEN_HEIGHT / 2 - 8, 24, 32 };
-    SDL_Rect playerHitbox = { playerDest.x - 4, playerDest.y, 32, 32 };
-
-    vector<Obstacle> obstacles = {
-        Obstacle(100, 100, 32, 96, 80)
-    };
+    SDL_Rect playerDest = { SCREEN_WIDTH / 2 - 10, SCREEN_HEIGHT / 2 - 10, 24, 32 };
+    SDL_Rect playerHitbox = { playerDest.x - 6, playerDest.y - 1, 32, 32 };
+    vector<Obstacle> obstacles = loadMapObstacles();
 
     TTF_Font* font = TTF_OpenFont("pixel_font.ttf", 24);
     GameState gameState = GameState::MENU;

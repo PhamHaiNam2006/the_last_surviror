@@ -34,6 +34,11 @@
 		</Compiler>
 		<Unit filename="defs.h" />
 		<Unit filename="main.cpp" />
+		<Unit filename="map_data.cpp" />
+		<Unit filename="map_data.h" />
+		<Unit filename="movement.cpp" />
+		<Unit filename="movement.h" />
+		<Unit filename="obstacle.cpp" />
 		<Unit filename="obstacle.h" />
 		<Unit filename="src/include/SDL2/SDL.h" />
 		<Unit filename="src/include/SDL2/SDL_assert.h" />

@@ -1,8 +1,8 @@
 #include "obstacle.h"
 
-Obstacle::Obstacle(int x, int y, int w, int h, int types) {
+Obstacle::Obstacle(int x, int y, int w, int h, int t) {
     rect = {x,y,w,h};
-    type=types;
+    type=t;
     /*80=wall
     65=baricage
     0=title*/
