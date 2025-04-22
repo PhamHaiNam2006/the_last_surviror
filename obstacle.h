@@ -10,6 +10,7 @@ public:
     void render(SDL_Renderer* renderer, SDL_Texture* texture) const;
     SDL_Rect getRect() const {return rect;}
     int getType() const {return type;}
+    SDL_Rect getTileClip() const;
 
 private:
     SDL_Rect rect;

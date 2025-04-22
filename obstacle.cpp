@@ -5,6 +5,10 @@ Obstacle::Obstacle(int x, int y, int w, int h, int t) {
     type=t;
     /*80=wall
     65=baricage
+    16=stair up
+    17=stair down
+    18=healing on/off
+
     0=title*/
 }
 
@@ -23,5 +27,12 @@ void Obstacle::render(SDL_Renderer* renderer, SDL_Texture* texture) const {
             SDL_RenderCopy(renderer, texture, &srcRect, &destRect);
         }
     }
+}
+
+SDL_Rect Obstacle::getTileClip() const {
+    int tilesPerRow = 256 / 16;  // 16
+    int tileX = type % tilesPerRow;
+    int tileY = type / tilesPerRow;
+    return { tileX * 16, tileY * 16, 16, 16 };
 }
 

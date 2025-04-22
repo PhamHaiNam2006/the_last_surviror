@@ -35,6 +35,7 @@ void renderStartScreen(SDL_Renderer* renderer, TTF_Font* font) {
         200,
         60
     };
+    SDL_Rect camera = { 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT };
 
     SDL_SetRenderDrawColor(renderer, 70, 70, 200, 255);
     SDL_RenderFillRect(renderer, &buttonRect);
@@ -56,9 +57,10 @@ int main(int argc, char* argv[]) {
     SDL_Texture* tileTexture = IMG_LoadTexture(renderer, "png_file/environment/tiles_sewers.png");
 
     SDL_Rect playerSrc = { 0, 0, 12, 16 };
-    SDL_Rect playerDest = { SCREEN_WIDTH / 2 - 10, SCREEN_HEIGHT / 2 - 10, 24, 32 };
-    SDL_Rect playerHitbox = { playerDest.x - 6, playerDest.y - 1, 32, 32 };
-    vector<Obstacle> obstacles = loadMapObstacles();
+    SDL_Rect playerDest = { SCREEN_WIDTH / 2 - 10, SCREEN_HEIGHT / 2 - 12, 24, 32 };
+    SDL_Rect playerHitbox = { playerDest.x - 8, playerDest.y - 4, 32, 32 };
+    SDL_Rect camera = { 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT };
+    vector<Obstacle> obstacles = loadMapObstacles1();
 
     TTF_Font* font = TTF_OpenFont("pixel_font.ttf", 24);
     GameState gameState = GameState::MENU;
@@ -94,7 +96,6 @@ int main(int argc, char* argv[]) {
             const Uint8* keystates = SDL_GetKeyboardState(NULL);
             if (now - lastInputTime > inputDelay) {
                 handleMovement(playerDest, obstacles);
-                handleMovement(playerHitbox, obstacles);
                 lastInputTime = now;
             }
 
@@ -117,11 +118,26 @@ int main(int argc, char* argv[]) {
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
             SDL_RenderClear(renderer);
 
-            for (const auto& o : obstacles) o.render(renderer, tileTexture);
+            for (const auto& o : obstacles) {
+                SDL_Rect dest = o.getRect();
+                SDL_Rect src = o.getTileClip();
+
+                dest.x -= camera.x;
+                dest.y -= camera.y;
+
+                SDL_RenderCopy(renderer, tileTexture, &src, &dest);
+            }
 
             playerSrc.x = currentFrame * 12;
             SDL_RendererFlip flip = facingLeft ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
-            SDL_RenderCopyEx(renderer, playerTexture, &playerSrc, &playerDest, 0, nullptr, flip);
+            SDL_Rect adjustedPlayer = playerDest;
+            adjustedPlayer.x -= camera.x;
+            adjustedPlayer.y -= camera.y;
+
+            SDL_RenderCopyEx(renderer, playerTexture, &playerSrc, &adjustedPlayer, 0, nullptr, flip);
+            camera.x = playerDest.x + playerDest.w / 2 - SCREEN_WIDTH / 2;
+            camera.y = playerDest.y + playerDest.h / 2 - SCREEN_HEIGHT / 2;
+
 
             SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
             SDL_RenderDrawRect(renderer, &playerHitbox);
