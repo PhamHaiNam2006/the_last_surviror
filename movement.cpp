@@ -15,10 +15,10 @@ void handleMovement(SDL_Rect& playerRect, const std::vector<Obstacle>& obstacles
     SDL_Rect nextPos = playerRect;
     const Uint8* keystates = SDL_GetKeyboardState(NULL);
 
-    if (keystates[SDL_SCANCODE_UP])    nextPos.y -= 32;
-    if (keystates[SDL_SCANCODE_DOWN])  nextPos.y += 32;
-    if (keystates[SDL_SCANCODE_LEFT])  nextPos.x -= 32;
-    if (keystates[SDL_SCANCODE_RIGHT]) nextPos.x += 32;
+    if (keystates[SDL_SCANCODE_UP])    nextPos.y -= 4;
+    if (keystates[SDL_SCANCODE_DOWN])  nextPos.y += 4;
+    if (keystates[SDL_SCANCODE_LEFT])  nextPos.x -= 4;
+    if (keystates[SDL_SCANCODE_RIGHT]) nextPos.x += 4;
 
     if (!willCollide(nextPos, obstacles)) {
         playerRect = nextPos;

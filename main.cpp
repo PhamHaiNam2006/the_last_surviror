@@ -7,6 +7,7 @@
 #include "obstacle.h"
 #include "movement.h"
 #include "map_data.h"
+#include "enemy.h"
 
 using namespace std;
 
@@ -55,6 +56,9 @@ int main(int argc, char* argv[]) {
 
     SDL_Texture* playerTexture = IMG_LoadTexture(renderer, "png_file/main_char/warrior.png");
     SDL_Texture* tileTexture = IMG_LoadTexture(renderer, "png_file/environment/tiles_sewers.png");
+    SDL_Texture* enemyTexture = IMG_LoadTexture(renderer, "png_file/enemy/rat.png");
+    Enemy enemy(enemyTexture, 64, 64);
+    bool playerMoved = false;
 
     SDL_Rect playerSrc = { 0, 0, 12, 16 };
     SDL_Rect playerDest = { SCREEN_WIDTH / 2 - 10, SCREEN_HEIGHT / 2 - 12, 24, 32 };
@@ -68,6 +72,7 @@ int main(int argc, char* argv[]) {
 
     bool running = true;
     SDL_Event event;
+
 
     bool facingLeft = false;
     int currentFrame = 0;
@@ -94,17 +99,18 @@ int main(int argc, char* argv[]) {
 
         if (gameState == GameState::PLAYING) {
             const Uint8* keystates = SDL_GetKeyboardState(NULL);
-            if (now - lastInputTime > inputDelay) {
-                handleMovement(playerDest, obstacles);
-                lastInputTime = now;
-            }
+            handleMovement(playerDest, obstacles);
 
             if (keystates[SDL_SCANCODE_UP] || keystates[SDL_SCANCODE_DOWN] || keystates[SDL_SCANCODE_LEFT] || keystates[SDL_SCANCODE_RIGHT]) {
                 playerState = PlayerState::WALKING;
                 if (keystates[SDL_SCANCODE_LEFT]) facingLeft = true;
                 else if (keystates[SDL_SCANCODE_RIGHT]) facingLeft = false;
+                playerMoved = true;
             } else {
                 playerState = PlayerState::IDLE;
+            }
+            if (keystates[SDL_SCANCODE_E]) {
+                enemy.activate();
             }
 
             if (playerState == PlayerState::WALKING && now - lastAnimTime > animDelay) {
@@ -115,9 +121,11 @@ int main(int argc, char* argv[]) {
                 lastAnimTime = now;
             }
 
+
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
             SDL_RenderClear(renderer);
 
+            std::vector<SDL_Rect> obstacleRects;
             for (const auto& o : obstacles) {
                 SDL_Rect dest = o.getRect();
                 SDL_Rect src = o.getTileClip();
@@ -126,6 +134,7 @@ int main(int argc, char* argv[]) {
                 dest.y -= camera.y;
 
                 SDL_RenderCopy(renderer, tileTexture, &src, &dest);
+                obstacleRects.push_back(o.getRect());
             }
 
             playerSrc.x = currentFrame * 12;
@@ -138,16 +147,22 @@ int main(int argc, char* argv[]) {
             camera.x = playerDest.x + playerDest.w / 2 - SCREEN_WIDTH / 2;
             camera.y = playerDest.y + playerDest.h / 2 - SCREEN_HEIGHT / 2;
 
+            enemy.update(playerDest, obstacleRects, playerMoved);
+            enemy.render(renderer, camera);
+
+            playerMoved = false;
 
             SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
             SDL_RenderDrawRect(renderer, &playerHitbox);
             SDL_RenderPresent(renderer);
+
+
         } else {
             renderStartScreen(renderer, font);
         }
-
-        SDL_Delay(16);
+    SDL_Delay(16);
     }
+
 
     TTF_CloseFont(font);
     TTF_Quit();
