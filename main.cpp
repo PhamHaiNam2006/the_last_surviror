@@ -57,8 +57,7 @@ int main(int argc, char* argv[]) {
     SDL_Texture* playerTexture = IMG_LoadTexture(renderer, "png_file/main_char/warrior.png");
     SDL_Texture* tileTexture = IMG_LoadTexture(renderer, "png_file/environment/tiles_sewers.png");
     SDL_Texture* enemyTexture = IMG_LoadTexture(renderer, "png_file/enemy/rat.png");
-    Enemy enemy(enemyTexture, 64, 64);
-    bool playerMoved = false;
+    Enemy enemy(enemyTexture, 160, 320);
 
     SDL_Rect playerSrc = { 0, 0, 12, 16 };
     SDL_Rect playerDest = { SCREEN_WIDTH / 2 - 10, SCREEN_HEIGHT / 2 - 12, 24, 32 };
@@ -78,9 +77,6 @@ int main(int argc, char* argv[]) {
     int currentFrame = 0;
     Uint32 lastAnimTime = 0;
     const Uint32 animDelay = 100;
-
-    Uint32 lastInputTime = 0;
-    const Uint32 inputDelay = 200;
 
     while (running) {
         Uint32 now = SDL_GetTicks();
@@ -105,12 +101,8 @@ int main(int argc, char* argv[]) {
                 playerState = PlayerState::WALKING;
                 if (keystates[SDL_SCANCODE_LEFT]) facingLeft = true;
                 else if (keystates[SDL_SCANCODE_RIGHT]) facingLeft = false;
-                playerMoved = true;
             } else {
                 playerState = PlayerState::IDLE;
-            }
-            if (keystates[SDL_SCANCODE_E]) {
-                enemy.activate();
             }
 
             if (playerState == PlayerState::WALKING && now - lastAnimTime > animDelay) {
@@ -147,10 +139,8 @@ int main(int argc, char* argv[]) {
             camera.x = playerDest.x + playerDest.w / 2 - SCREEN_WIDTH / 2;
             camera.y = playerDest.y + playerDest.h / 2 - SCREEN_HEIGHT / 2;
 
-            enemy.update(playerDest, obstacleRects, playerMoved);
+            enemy.update(playerHitbox, obstacles);
             enemy.render(renderer, camera);
-
-            playerMoved = false;
 
             SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
             SDL_RenderDrawRect(renderer, &playerHitbox);

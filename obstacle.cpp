@@ -30,7 +30,7 @@ void Obstacle::render(SDL_Renderer* renderer, SDL_Texture* texture) const {
 }
 
 SDL_Rect Obstacle::getTileClip() const {
-    int tilesPerRow = 256 / 16;  // 16
+    int tilesPerRow = 256 / 16;
     int tileX = type % tilesPerRow;
     int tileY = type / tilesPerRow;
     return { tileX * 16, tileY * 16, 16, 16 };

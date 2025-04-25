@@ -3,43 +3,30 @@
 
 #include <SDL.h>
 #include <vector>
-
-enum class EnemyState {
-    IDLE,
-    MOVE,
-    ATTACK,
-    DIE
-};
+#include "obstacle.h"
 
 class Enemy {
 public:
-    Enemy(SDL_Texture* texture, int x, int y);
-
-    void update(const SDL_Rect& playerRect, const std::vector<SDL_Rect>& obstacles, bool playerMoved);
+    Enemy(SDL_Texture* tex, int x, int y);
+    void update(const SDL_Rect& playerRect, const std::vector<Obstacle>& obstacles);
     void render(SDL_Renderer* renderer, const SDL_Rect& camera);
 
-    void activate();
-    bool isActive() const;
-    SDL_Rect getHitbox() const;
-    bool isCollidingWithPlayer(const SDL_Rect& player) const;
-
 private:
-    SDL_Texture* texture;
     SDL_Rect rect;
-    SDL_Rect hitbox;
-    int frame;
-    int frameCounter;
-    Uint32 lastFrameTime;
-    int frameDelay;
-    EnemyState state;
-    bool active;
-    Uint32 lastActionTime;
-    int actionDelay;
+    SDL_Texture* texture;
 
-    void animate();
-    void moveTowards(const SDL_Rect& target);
-    bool canSeePlayer(const SDL_Rect& player, const std::vector<SDL_Rect>& obstacles) const;
-    SDL_Rect getSpriteClip() const;
+    enum class State {
+        MOVING,
+        ATTACKING
+    } state;
+
+    int animFrame = 0;
+    Uint32 lastAnimTime = 0;
+    const int frameW = 16, frameH = 15;
+    SDL_Rect getAnimSrcRect() const;
+
+    void moveToward(const SDL_Rect& playerRect, const std::vector<Obstacle>& obstacles);
+    bool touchingPlayer(const SDL_Rect& playerRect);
 };
 
 #endif

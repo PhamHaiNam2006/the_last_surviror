@@ -12,15 +12,31 @@ bool willCollide(const SDL_Rect& nextPos, const std::vector<Obstacle>& obstacles
 }
 
 void handleMovement(SDL_Rect& playerRect, const std::vector<Obstacle>& obstacles) {
-    SDL_Rect nextPos = playerRect;
+    SDL_Rect nextPlayerPos = playerRect;
+    SDL_Rect simulatedHitbox;
+
+    const SDL_Rect hitboxOffset = { -8, -4, 32, 32 };
     const Uint8* keystates = SDL_GetKeyboardState(NULL);
 
-    if (keystates[SDL_SCANCODE_UP])    nextPos.y -= 4;
-    if (keystates[SDL_SCANCODE_DOWN])  nextPos.y += 4;
-    if (keystates[SDL_SCANCODE_LEFT])  nextPos.x -= 4;
-    if (keystates[SDL_SCANCODE_RIGHT]) nextPos.x += 4;
+    if (keystates[SDL_SCANCODE_UP]) {
+        nextPlayerPos.y -= 4;
+    } else if (keystates[SDL_SCANCODE_DOWN]) {
+        nextPlayerPos.y += 4;
+    }
+    if (keystates[SDL_SCANCODE_LEFT]) {
+        nextPlayerPos.x -= 4;
+    } else if (keystates[SDL_SCANCODE_RIGHT]) {
+        nextPlayerPos.x += 4;
+    }
 
-    if (!willCollide(nextPos, obstacles)) {
-        playerRect = nextPos;
+    simulatedHitbox = {
+        nextPlayerPos.x + hitboxOffset.x,
+        nextPlayerPos.y + hitboxOffset.y,
+        hitboxOffset.w,
+        hitboxOffset.h
+    };
+
+    if (!willCollide(simulatedHitbox, obstacles)) {
+        playerRect = nextPlayerPos;
     }
 }

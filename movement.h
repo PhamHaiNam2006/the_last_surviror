@@ -8,4 +8,5 @@
 bool willCollide(const SDL_Rect& nextPos, const std::vector<Obstacle>& obstacles);
 void handleMovement(SDL_Rect& playerRect, const std::vector<Obstacle>& obstacles);
 
+
 #endif
