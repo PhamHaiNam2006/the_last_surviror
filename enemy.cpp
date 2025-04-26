@@ -9,42 +9,48 @@ Enemy::Enemy(SDL_Texture* tex, int x, int y) {
 }
 
 void Enemy::update(const SDL_Rect& playerRect, const std::vector<Obstacle>& obstacles) {
-    bool wasTouching = touchingPlayer(playerRect);
+    Uint32 now = SDL_GetTicks();
 
-    if (wasTouching) {
-        state = State::ATTACKING;
-    } else {
-        state = State::MOVING;
-        moveToward(playerRect, obstacles); // Continue moving toward the player
+    bool isTouching = touchingPlayer(playerRect);
+
+    if (state == State::ATTACKING) {
+        if (now - attackStartTime >= 285) {
+            if (isTouching) {
+                // Still touching, restart attack timer
+                attackStartTime = now;
+            } else {
+                // Not touching anymore, switch back to moving
+                state = State::MOVING;
+            }
+        }
+    }
+    else {
+        if (isTouching) {
+            // Just touched the player, start attacking
+            state = State::ATTACKING;
+            attackStartTime = now;
+            animFrame = 2; // Reset attack animation
+        } else {
+            // Otherwise move
+            moveToward(playerRect, obstacles);
+        }
     }
 
-    // Update animation
-    Uint32 now = SDL_GetTicks();
+    // Animation
     if (now - lastAnimTime > 100) {
         if (state == State::MOVING) {
-            // If moving, cycle through frames 5-9
-            animFrame = (animFrame + 1) % 5 + 5;
+            animFrame++;
+            if (animFrame > 9) animFrame = 5; // Move frames 5–9
         } else if (state == State::ATTACKING) {
-            // If attacking, cycle through frames 2-4
-            animFrame = (animFrame + 1) % 3 + 2;
+            animFrame++;
+            if (animFrame > 4) animFrame = 2; // Attack frames 2–4
         }
-
         lastAnimTime = now;
-    }
-
-    // Handle animation frame reset when state changes (avoid glitch)
-    if (state == State::MOVING && wasTouching) {
-        animFrame = 5;  // Start the moving animation from the beginning if transitioning from attack to move
-    } else if (state == State::ATTACKING && !wasTouching) {
-        animFrame = 2;  // Start the attacking animation from the beginning if transitioning from move to attack
     }
 }
 
-void Enemy::render(SDL_Renderer* renderer, const SDL_Rect& camera) {
+void Enemy::render(SDL_Renderer* renderer) {
     SDL_Rect screenRect = rect;
-    screenRect.x -= camera.x;
-    screenRect.y -= camera.y;
-
     SDL_Rect src = getAnimSrcRect();
     SDL_RenderCopy(renderer, texture, &src, &screenRect);
 }
@@ -57,6 +63,7 @@ SDL_Rect Enemy::getAnimSrcRect() const {
 bool Enemy::touchingPlayer(const SDL_Rect& playerRect) {
     return SDL_HasIntersection(&rect, &playerRect);
 }
+
 
 void Enemy::moveToward(const SDL_Rect& playerRect, const std::vector<Obstacle>& obstacles) {
     SDL_Rect next = rect;

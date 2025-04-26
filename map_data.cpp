@@ -5,7 +5,7 @@ std::vector<Obstacle> loadMapObstacles1() {
 
     const int tileSize = 32;
     const int rows = 20;
-    const int cols = 20;
+    const int cols = 30;
 
     for (int y = 0; y < rows; ++y) {
         for (int x = 0; x < cols; ++x) {
@@ -15,7 +15,7 @@ std::vector<Obstacle> loadMapObstacles1() {
                 type = 80;
             }
 
-            if ((x == 4 && y == 4) || (x == 5 && y == 5)) {
+            if ((x == 4 && y == 4) || (x == 10 && y == 5)) {
                 type = 65;
             }
 

@@ -36,7 +36,6 @@ void renderStartScreen(SDL_Renderer* renderer, TTF_Font* font) {
         200,
         60
     };
-    SDL_Rect camera = { 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT };
 
     SDL_SetRenderDrawColor(renderer, 70, 70, 200, 255);
     SDL_RenderFillRect(renderer, &buttonRect);
@@ -61,8 +60,7 @@ int main(int argc, char* argv[]) {
 
     SDL_Rect playerSrc = { 0, 0, 12, 16 };
     SDL_Rect playerDest = { SCREEN_WIDTH / 2 - 10, SCREEN_HEIGHT / 2 - 12, 24, 32 };
-    SDL_Rect playerHitbox = { playerDest.x - 8, playerDest.y - 4, 32, 32 };
-    SDL_Rect camera = { 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT };
+    SDL_Rect playerHitbox = { playerDest.x, playerDest.y, 24, 32 };
     vector<Obstacle> obstacles = loadMapObstacles1();
 
     TTF_Font* font = TTF_OpenFont("pixel_font.ttf", 24);
@@ -96,6 +94,7 @@ int main(int argc, char* argv[]) {
         if (gameState == GameState::PLAYING) {
             const Uint8* keystates = SDL_GetKeyboardState(NULL);
             handleMovement(playerDest, obstacles);
+            handleMovement(playerHitbox, obstacles);
 
             if (keystates[SDL_SCANCODE_UP] || keystates[SDL_SCANCODE_DOWN] || keystates[SDL_SCANCODE_LEFT] || keystates[SDL_SCANCODE_RIGHT]) {
                 playerState = PlayerState::WALKING;
@@ -122,25 +121,16 @@ int main(int argc, char* argv[]) {
                 SDL_Rect dest = o.getRect();
                 SDL_Rect src = o.getTileClip();
 
-                dest.x -= camera.x;
-                dest.y -= camera.y;
-
                 SDL_RenderCopy(renderer, tileTexture, &src, &dest);
                 obstacleRects.push_back(o.getRect());
             }
 
             playerSrc.x = currentFrame * 12;
             SDL_RendererFlip flip = facingLeft ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
-            SDL_Rect adjustedPlayer = playerDest;
-            adjustedPlayer.x -= camera.x;
-            adjustedPlayer.y -= camera.y;
 
-            SDL_RenderCopyEx(renderer, playerTexture, &playerSrc, &adjustedPlayer, 0, nullptr, flip);
-            camera.x = playerDest.x + playerDest.w / 2 - SCREEN_WIDTH / 2;
-            camera.y = playerDest.y + playerDest.h / 2 - SCREEN_HEIGHT / 2;
-
+            SDL_RenderCopyEx(renderer, playerTexture, &playerSrc, &playerDest, 0, nullptr, flip);
             enemy.update(playerHitbox, obstacles);
-            enemy.render(renderer, camera);
+            enemy.render(renderer);
 
             SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
             SDL_RenderDrawRect(renderer, &playerHitbox);
