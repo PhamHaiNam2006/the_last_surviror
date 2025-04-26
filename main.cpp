@@ -6,10 +6,13 @@
 #include "defs.h"
 #include "obstacle.h"
 #include "movement.h"
-#include "map_data.h"
+#include "map_manager.h"
 #include "enemy.h"
 
 using namespace std;
+
+const char* WINDOW_TITLE = "Dungeon Explorer";
+MapManager mapManager;
 
 enum class GameState {
     MENU,
@@ -61,7 +64,10 @@ int main(int argc, char* argv[]) {
     SDL_Rect playerSrc = { 0, 0, 12, 16 };
     SDL_Rect playerDest = { SCREEN_WIDTH / 2 - 10, SCREEN_HEIGHT / 2 - 12, 24, 32 };
     SDL_Rect playerHitbox = { playerDest.x, playerDest.y, 24, 32 };
-    vector<Obstacle> obstacles = loadMapObstacles1();
+    mapManager.loadMaps();
+    mapManager.setCurrentMap(0);
+    int n=0;
+    int m=0;
 
     TTF_Font* font = TTF_OpenFont("pixel_font.ttf", 24);
     GameState gameState = GameState::MENU;
@@ -93,8 +99,8 @@ int main(int argc, char* argv[]) {
 
         if (gameState == GameState::PLAYING) {
             const Uint8* keystates = SDL_GetKeyboardState(NULL);
-            handleMovement(playerDest, obstacles);
-            handleMovement(playerHitbox, obstacles);
+            handleMovement(playerDest, mapManager.getCurrentMap(),n);
+            handleMovement(playerHitbox, mapManager.getCurrentMap(),m);
 
             if (keystates[SDL_SCANCODE_UP] || keystates[SDL_SCANCODE_DOWN] || keystates[SDL_SCANCODE_LEFT] || keystates[SDL_SCANCODE_RIGHT]) {
                 playerState = PlayerState::WALKING;
@@ -115,21 +121,18 @@ int main(int argc, char* argv[]) {
 
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
             SDL_RenderClear(renderer);
-
-            std::vector<SDL_Rect> obstacleRects;
-            for (const auto& o : obstacles) {
+            mapManager.setCurrentMap(n);
+            for (const auto& o : mapManager.getCurrentMap()) {
                 SDL_Rect dest = o.getRect();
                 SDL_Rect src = o.getTileClip();
-
                 SDL_RenderCopy(renderer, tileTexture, &src, &dest);
-                obstacleRects.push_back(o.getRect());
             }
 
             playerSrc.x = currentFrame * 12;
             SDL_RendererFlip flip = facingLeft ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
 
             SDL_RenderCopyEx(renderer, playerTexture, &playerSrc, &playerDest, 0, nullptr, flip);
-            enemy.update(playerHitbox, obstacles);
+            enemy.update(playerHitbox, mapManager.getCurrentMap());
             enemy.render(renderer);
 
             SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);

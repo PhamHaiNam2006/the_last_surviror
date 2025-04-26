@@ -24,7 +24,7 @@
 1743124304 e:\learning material\code blocks\dungeon_explorer\obstacle.h
 	<SDL.h>
 
-1745656787 source:e:\learning_material\code_blocks\dungeon_explorer\main.cpp
+1745661769 source:e:\learning_material\code_blocks\dungeon_explorer\main.cpp
 	<SDL.h>
 	<SDL_mixer.h>
 	<SDL_ttf.h>
@@ -33,24 +33,25 @@
 	"defs.h"
 	"obstacle.h"
 	"movement.h"
-	"map_data.h"
+	"map_manager.h"
 	"enemy.h"
 
-1745490898 e:\learning_material\code_blocks\dungeon_explorer\movement.h
+1745661769 e:\learning_material\code_blocks\dungeon_explorer\movement.h
 	<SDL.h>
 	<vector>
 	"obstacle.h"
 
-1745318764 e:\learning_material\code_blocks\dungeon_explorer\obstacle.h
+1745662055 e:\learning_material\code_blocks\dungeon_explorer\obstacle.h
 	<SDL.h>
 	<SDL_image.h>
 
-1743123643 e:\learning_material\code_blocks\dungeon_explorer\defs.h
+1745659205 e:\learning_material\code_blocks\dungeon_explorer\defs.h
 	<SDL.h>
 	<SDL_image.h>
 
-1745490927 source:e:\learning_material\code_blocks\dungeon_explorer\movement.cpp
+1745661282 source:e:\learning_material\code_blocks\dungeon_explorer\movement.cpp
 	"movement.h"
+	"defs.h"
 
 1745491849 source:e:\learning_material\code_blocks\dungeon_explorer\obstacle.cpp
 	"obstacle.h"
@@ -68,10 +69,10 @@
 	"movement.h"
 	<SDL.h>
 
-1745653979 source:e:\learning_material\code_blocks\dungeon_explorer\map_data.cpp
+1745661282 source:e:\learning_material\code_blocks\dungeon_explorer\map_data.cpp
 	"map_data.h"
 
-1745324384 e:\learning_material\code_blocks\dungeon_explorer\map_data.h
+1745661282 e:\learning_material\code_blocks\dungeon_explorer\map_data.h
 	<vector>
 	"obstacle.h"
 
@@ -84,8 +85,17 @@
 	<vector>
 	"obstacle.h"
 
-1745655126 source:e:\learning_material\code_blocks\dungeon_explorer\enemy.cpp
+1745657993 source:e:\learning_material\code_blocks\dungeon_explorer\enemy.cpp
 	"enemy.h"
 	"movement.h"
 	<cmath>
+
+1745661282 source:e:\learning_material\code_blocks\dungeon_explorer\map_manager.cpp
+	"map_manager.h"
+	"map_data.h"
+
+1745662055 e:\learning_material\code_blocks\dungeon_explorer\map_manager.h
+	<vector>
+	<map>
+	"obstacle.h"
 

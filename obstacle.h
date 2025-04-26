@@ -17,4 +17,4 @@ private:
     int type;
 };
 
-#endif // OBSTACLE_H
+#endif

@@ -5,5 +5,6 @@
 #include "obstacle.h"
 
 std::vector<Obstacle> loadMapObstacles1();
+std::vector<Obstacle> loadMapObstacles2();
 
 #endif

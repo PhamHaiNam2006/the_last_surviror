@@ -16,34 +16,29 @@ void Enemy::update(const SDL_Rect& playerRect, const std::vector<Obstacle>& obst
     if (state == State::ATTACKING) {
         if (now - attackStartTime >= 285) {
             if (isTouching) {
-                // Still touching, restart attack timer
                 attackStartTime = now;
             } else {
-                // Not touching anymore, switch back to moving
                 state = State::MOVING;
             }
         }
     }
     else {
         if (isTouching) {
-            // Just touched the player, start attacking
             state = State::ATTACKING;
             attackStartTime = now;
-            animFrame = 2; // Reset attack animation
+            animFrame = 2;
         } else {
-            // Otherwise move
             moveToward(playerRect, obstacles);
         }
     }
 
-    // Animation
     if (now - lastAnimTime > 100) {
         if (state == State::MOVING) {
             animFrame++;
-            if (animFrame > 9) animFrame = 5; // Move frames 5–9
+            if (animFrame > 9) animFrame = 5;
         } else if (state == State::ATTACKING) {
             animFrame++;
-            if (animFrame > 4) animFrame = 2; // Attack frames 2–4
+            if (animFrame > 4) animFrame = 2;
         }
         lastAnimTime = now;
     }
@@ -64,16 +59,29 @@ bool Enemy::touchingPlayer(const SDL_Rect& playerRect) {
     return SDL_HasIntersection(&rect, &playerRect);
 }
 
-
 void Enemy::moveToward(const SDL_Rect& playerRect, const std::vector<Obstacle>& obstacles) {
-    SDL_Rect next = rect;
+    int dx = 0;
+    int dy = 0;
 
-    if (playerRect.x > rect.x) next.x += 2;
-    if (playerRect.x < rect.x) next.x -= 2;
-    if (playerRect.y > rect.y) next.y += 2;
-    if (playerRect.y < rect.y) next.y -= 2;
+    int diffX = playerRect.x - rect.x;
+    int diffY = playerRect.y - rect.y;
 
-    if (!willCollide(next, obstacles)) {
-        rect = next;
+    if (diffX < 0) dx = -2;
+    else if (diffX > 0) dx = 2;
+
+    if (diffY < 0) dy = -2;
+    else if (diffY > 0) dy = 2;
+
+    SDL_Rect nextX = rect;
+    nextX.x += dx;
+    if (!willCollide(nextX, obstacles)) {
+        rect.x = nextX.x;
+    }
+
+    SDL_Rect nextY = rect;
+    nextY.y += dy;
+    if (!willCollide(nextY, obstacles)) {
+        rect.y = nextY.y;
     }
 }
+
