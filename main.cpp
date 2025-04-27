@@ -59,7 +59,10 @@ int main(int argc, char* argv[]) {
     SDL_Texture* playerTexture = IMG_LoadTexture(renderer, "png_file/main_char/warrior.png");
     SDL_Texture* tileTexture = IMG_LoadTexture(renderer, "png_file/environment/tiles_sewers.png");
     SDL_Texture* enemyTexture = IMG_LoadTexture(renderer, "png_file/enemy/rat.png");
-    Enemy enemy(enemyTexture, 160, 320);
+    vector<Enemy> enemy = {
+        Enemy(enemyTexture, 160, 320),
+        Enemy(enemyTexture, 200, 200)
+    };
 
     SDL_Rect playerSrc = { 0, 0, 12, 16 };
     SDL_Rect playerDest = { SCREEN_WIDTH / 2 - 10, SCREEN_HEIGHT / 2 - 12, 24, 32 };
@@ -132,8 +135,8 @@ int main(int argc, char* argv[]) {
             SDL_RendererFlip flip = facingLeft ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
 
             SDL_RenderCopyEx(renderer, playerTexture, &playerSrc, &playerDest, 0, nullptr, flip);
-            enemy.update(playerHitbox, mapManager.getCurrentMap());
-            enemy.render(renderer);
+            enemy[m].update(playerHitbox, mapManager.getCurrentMap());
+            enemy[m].render(renderer);
 
             SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
             SDL_RenderDrawRect(renderer, &playerHitbox);
