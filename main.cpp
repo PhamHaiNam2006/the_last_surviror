@@ -8,6 +8,7 @@
 #include "movement.h"
 #include "map_manager.h"
 #include "enemy.h"
+#include "character_data.h"
 
 using namespace std;
 
@@ -16,6 +17,7 @@ MapManager mapManager;
 
 enum class GameState {
     MENU,
+    CHARACTER,
     PLAYING
 };
 
@@ -24,6 +26,17 @@ enum class PlayerState {
     WALKING,
     DEAD
 };
+
+void RenderText(SDL_Renderer* renderer, TTF_Font* font, const std::string& text, int x, int y, SDL_Color color) {
+    SDL_Surface* surface = TTF_RenderText_Solid(font, text.c_str(), color);
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+
+    SDL_Rect dstRect = {x, y, surface->w, surface->h};
+    SDL_RenderCopy(renderer, texture, nullptr, &dstRect);
+
+    SDL_FreeSurface(surface);
+    SDL_DestroyTexture(texture);
+}
 
 void renderStartScreen(SDL_Renderer* renderer, TTF_Font* font) {
     SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
@@ -64,9 +77,23 @@ int main(int argc, char* argv[]) {
         Enemy(enemyTexture, 200, 200)
     };
 
+    std::vector<CharacterOption> backgroundOptions;
+    std::vector<CharacterOption> weaponOptions;
+
+    loadCharacterData("character_data.txt", backgroundOptions, weaponOptions);
+
+    int x, y;
+    int hoverBackground = -1, hoverWeapon = -1;
+    int descriptionY = 0;
+    SDL_Color color = {255, 255, 255, 255};
+    SDL_Color White = {255, 255, 255, 255};
+    SDL_Color Green = {0, 255, 0, 255};
+    SDL_Color Cyan = {0, 255, 255, 255};
+
     SDL_Rect playerSrc = { 0, 0, 12, 16 };
     SDL_Rect playerDest = { SCREEN_WIDTH / 2 - 10, SCREEN_HEIGHT / 2 - 12, 24, 32 };
     SDL_Rect playerHitbox = { playerDest.x, playerDest.y, 24, 32 };
+
     mapManager.loadMaps();
     mapManager.setCurrentMap(0);
     int n=0;
@@ -79,7 +106,6 @@ int main(int argc, char* argv[]) {
     bool running = true;
     SDL_Event event;
 
-
     bool facingLeft = false;
     int currentFrame = 0;
     Uint32 lastAnimTime = 0;
@@ -90,8 +116,9 @@ int main(int argc, char* argv[]) {
 
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) running = false;
+
             if (gameState == GameState::MENU && event.type == SDL_MOUSEBUTTONDOWN) {
-                int x = event.button.x, y = event.button.y;
+                x = event.button.x, y = event.button.y;
                 SDL_Point mousePoint = {x, y};
                 SDL_Rect startButton = { (SCREEN_WIDTH - 200) / 2, (SCREEN_HEIGHT - 60) / 2, 200, 60 };
                 if (SDL_PointInRect(&mousePoint, &startButton)) {
@@ -102,8 +129,8 @@ int main(int argc, char* argv[]) {
 
         if (gameState == GameState::PLAYING) {
             const Uint8* keystates = SDL_GetKeyboardState(NULL);
-            handleMovement(playerDest, mapManager.getCurrentMap(),n);
-            handleMovement(playerHitbox, mapManager.getCurrentMap(),m);
+            handleMovement(playerDest, mapManager.getCurrentMap(), n);
+            handleMovement(playerHitbox, mapManager.getCurrentMap(), m);
 
             if (keystates[SDL_SCANCODE_UP] || keystates[SDL_SCANCODE_DOWN] || keystates[SDL_SCANCODE_LEFT] || keystates[SDL_SCANCODE_RIGHT]) {
                 playerState = PlayerState::WALKING;
@@ -120,7 +147,6 @@ int main(int argc, char* argv[]) {
                 currentFrame = (currentFrame == 0) ? 1 : 0;
                 lastAnimTime = now;
             }
-
 
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
             SDL_RenderClear(renderer);
@@ -142,13 +168,57 @@ int main(int argc, char* argv[]) {
             SDL_RenderDrawRect(renderer, &playerHitbox);
             SDL_RenderPresent(renderer);
 
-
-        } else {
+        } else if(gameState == GameState::MENU) {
             renderStartScreen(renderer, font);
-        }
-    SDL_Delay(16);
-    }
+        } else if(gameState == GameState::CHARACTER) {
+            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+            SDL_RenderClear(renderer);
 
+            int startX = 50;
+            int startY = 50;
+            for (int i = 0; i < backgroundOptions.size(); i++) {
+                color = (hoverBackground == i) ? Cyan : White;
+                RenderText(renderer, font, backgroundOptions[i].name, startX + i * 220, startY, color);
+            }
+
+            // Draw Weapon Choices
+            int weaponY = startY + 100;
+            for (int i = 0; i < weaponOptions.size(); i++) {
+                color = (hoverWeapon == i) ? Cyan : White;
+                RenderText(renderer, font, weaponOptions[i].name, startX + i * 220, weaponY, color);
+            }
+
+            // Draw Hover Descriptions
+            descriptionY = weaponY + 100;
+            if (hoverBackground != -1) {
+                RenderText(renderer, font, backgroundOptions[hoverBackground].description, 50, descriptionY, Green);
+            }
+            if (hoverWeapon != -1) {
+                RenderText(renderer, font, weaponOptions[hoverWeapon].description, 50, descriptionY + 40, Green);
+            }
+
+            // Show selected
+            if (hoverBackground != -1) {
+                RenderText(renderer, font, "Selected Background: " + backgroundOptions[hoverBackground].name, 50, descriptionY + 100, White);
+            }
+            if (hoverWeapon != -1) {
+                RenderText(renderer, font, "Selected Weapon: " + weaponOptions[hoverWeapon].name, 50, descriptionY + 140, White);
+            }
+
+            // Show Start button if both are selected
+            if (hoverBackground != -1 && hoverWeapon != -1) {
+                SDL_Rect startButtonRect = { SCREEN_WIDTH / 2 - 100, SCREEN_HEIGHT - 100, 200, 60 };
+                SDL_SetRenderDrawColor(renderer, 70, 200, 70, 255);
+                SDL_RenderFillRect(renderer, &startButtonRect);
+
+                RenderText(renderer, font, "START", startButtonRect.x + 60, startButtonRect.y + 20, White);
+            }
+
+            SDL_RenderPresent(renderer);
+        }
+
+        SDL_Delay(16);
+    }
 
     TTF_CloseFont(font);
     TTF_Quit();

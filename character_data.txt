@@ -1,0 +1,16 @@
+Choose your background:
+1.A brave child:
+-Half starting health, -25% damage, stamina deplete faster.
+2.Normal adventure:
+-Normal stat.
+3.Veteran adventure:
+- +25% damage, double change of critical hit.
+Choose your weapon:
+1.Sword:
+-Attack wider.
+2.Spear:
+-Double attack range, slightly knockback.
+-Cannot attack too close.
+3.Bare hand:
+-Insane attack speed, medium knockback, 10% change to stun enemy (5 second stun cooldown).
+-Small attack range, 35% damage.

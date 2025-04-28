@@ -99,3 +99,12 @@
 	<map>
 	"obstacle.h"
 
+1745852978 source:e:\learning_material\code_blocks\dungeon_explorer\character_data.cpp
+	"character_data.h"
+	<fstream>
+	<sstream>
+
+1745852262 e:\learning_material\code_blocks\dungeon_explorer\character_data.h
+	<string>
+	<vector>
+
