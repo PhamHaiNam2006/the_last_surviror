@@ -12,6 +12,12 @@ public:
     void render(SDL_Renderer* renderer);
     SDL_Rect getAttackBox() const;
 
+    bool alive = true;
+    bool isAlive() const { return alive; }
+    void kill() { alive = false; }
+
+    SDL_Rect getHitbox() const { return rect; }
+
 private:
     SDL_Rect rect;
     SDL_Texture* texture;

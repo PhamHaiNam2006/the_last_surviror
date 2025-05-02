@@ -72,6 +72,7 @@ int main(int argc, char* argv[]) {
     SDL_Texture* tileTexture = IMG_LoadTexture(renderer, "png_file/environment/tiles_sewers.png");
     SDL_Texture* enemyTexture = IMG_LoadTexture(renderer, "png_file/enemy/rat.png");
     SDL_Texture* slashTexture = IMG_LoadTexture(renderer, "png_file/main_char/slash.png");
+
     vector<Enemy> enemy = {
         Enemy(enemyTexture, 160, 320),
         Enemy(enemyTexture, 200, 200)
@@ -79,6 +80,14 @@ int main(int argc, char* argv[]) {
 
     SDL_Rect playerSrc = { 0, 0, 12, 16 };
     SDL_Rect playerDest = { SCREEN_WIDTH / 2 - 10, SCREEN_HEIGHT / 2 - 12, 24, 32 };
+
+    int playerHealth = 100;
+    int maxHealth = 100;
+
+    int playerStamina = 100;
+    int maxStamina = 100;
+    Uint32 runOutStamina = 0;
+    const Uint32 runCooldown = 2000;
 
     bool playerAttacking = false;
     Uint32 attackStartTime = 0;
@@ -137,9 +146,19 @@ int main(int argc, char* argv[]) {
             } else {
                 playerState = PlayerState::IDLE;
             }
-            if (keystates[SDL_SCANCODE_LSHIFT]) {
+
+            if (keystates[SDL_SCANCODE_LSHIFT] && playerStamina >= 2 && SDL_GetTicks() - runOutStamina >= runCooldown) {
                 sprint = 2;
+            } else if (playerStamina == 0) {
+                runOutStamina = SDL_GetTicks();
             }
+
+            if (playerState == PlayerState::WALKING && sprint == 2) {
+                playerStamina = max(0, playerStamina - 2);
+            } else if (playerStamina < maxStamina) {
+                playerStamina += 1;
+            }
+
             if (keystates[SDL_SCANCODE_SPACE] && SDL_GetTicks() - lastAttackTime >= attackCooldown && !playerAttacking) {
                 playerAttacking = true;
                 attackStartTime = SDL_GetTicks();
@@ -147,19 +166,18 @@ int main(int argc, char* argv[]) {
 
                 if (facingLeft) {
                     playerAttackBox = { playerDest.x - 24, playerDest.y, 32, 32 };
-                    slashDest = { playerDest.x - 24, playerDest.y - 32, 24, 96 };
+                    slashDest = { playerDest.x - 24, playerDest.y - 16, 24, 64 };
                 } else {
                     playerAttackBox = { playerDest.x + playerDest.w, playerDest.y, 32, 32 };
-                    slashDest = { playerDest.x + playerDest.w, playerDest.y - 32, 24, 96 };
+                    slashDest = { playerDest.x + playerDest.w, playerDest.y - 16, 24, 64 };
                 }
 
                 showSlash = true;
+                slashStartTime = SDL_GetTicks();
                 currentFrame = 13;
             } else if (SDL_GetTicks() - lastAttackTime >= slashDuration) {
                 handleMovement(playerDest, mapManager.getCurrentMap(), n, sprint);
             }
-
-
 
             if (playerAttacking) {
                 Uint32 elapsed = SDL_GetTicks() - attackStartTime;
@@ -175,6 +193,7 @@ int main(int argc, char* argv[]) {
                     currentFrame = 13;
                 }
             }
+
             if (showSlash && SDL_GetTicks() - slashStartTime > slashDuration) {
                 showSlash = false;
             }
@@ -212,15 +231,41 @@ int main(int argc, char* argv[]) {
                 };
                 SDL_RenderDrawRect(renderer, &renderBox);
             }
+
+            SDL_RenderCopyEx(renderer, playerTexture, &playerSrc, &playerDest, 0, nullptr, flip);
             if (showSlash) {
                 SDL_RenderCopyEx(renderer, slashTexture, &slashSrc, &slashDest, 0, nullptr, flip);
             }
 
-            SDL_RenderCopyEx(renderer, playerTexture, &playerSrc, &playerDest, 0, nullptr, flip);
-            enemy[n].update(playerDest, mapManager.getCurrentMap());
-            enemy[n].render(renderer);
+            if (showSlash && enemy[n].isAlive()) {
+                SDL_Rect enemyHitBox = enemy[n].getHitbox();
+                if (SDL_HasIntersection(&slashDest, &enemyHitBox)) {
+                    enemy[n].kill();
+                }
+            }
+
+            if (enemy[n].isAlive()) {
+                enemy[n].update(playerDest, mapManager.getCurrentMap());
+                enemy[n].render(renderer);
+            }
 
             SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+            SDL_Rect healthBack = { 20, 20, 200, 20 };
+            SDL_Rect healthFill = { 20, 20, 200 * playerHealth / maxHealth, 20 };
+
+            SDL_SetRenderDrawColor(renderer, 100, 0, 0, 255);
+            SDL_RenderFillRect(renderer, &healthBack);
+            SDL_SetRenderDrawColor(renderer, 0, 200, 0, 255);
+            SDL_RenderFillRect(renderer, &healthFill);
+
+            SDL_Rect staminaBack = { 20, 45, 200, 15 };
+            SDL_Rect staminaFill = { 20, 45, 200 * playerStamina / maxStamina, 15 };
+
+            SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
+            SDL_RenderFillRect(renderer, &staminaBack);
+            SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+            SDL_RenderFillRect(renderer, &staminaFill);
+
             SDL_RenderPresent(renderer);
 
         } else if(gameState == GameState::MENU) {
