@@ -10,6 +10,7 @@ public:
     Enemy(SDL_Texture* tex, int x, int y);
     void update(const SDL_Rect& playerRect, const std::vector<Obstacle>& obstacles);
     void render(SDL_Renderer* renderer);
+    SDL_Rect getAttackBox() const;
 
 private:
     SDL_Rect rect;
@@ -27,6 +28,8 @@ private:
     Uint32 lastAnimTime = 0;
     const int frameW = 16, frameH = 15;
     SDL_Rect getAnimSrcRect() const;
+    bool facingLeft;
+    SDL_Rect attackBox;
 
     Uint32 attackStartTime = 0;
 

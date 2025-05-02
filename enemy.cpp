@@ -8,28 +8,39 @@ Enemy::Enemy(SDL_Texture* tex, int x, int y) {
     state = State::MOVING;
 }
 
+SDL_Rect Enemy::getAttackBox() const {
+    return attackBox;
+}
+
 void Enemy::update(const SDL_Rect& playerRect, const std::vector<Obstacle>& obstacles) {
     Uint32 now = SDL_GetTicks();
-
     bool isTouching = touchingPlayer(playerRect);
+    facingLeft = (playerRect.x < rect.x);
 
-    if (state == State::ATTACKING) {
-        if (now - attackStartTime >= 285) {
-            if (isTouching) {
-                attackStartTime = now;
-            } else {
-                state = State::MOVING;
-            }
-        }
-    }
-    else {
-        if (isTouching) {
+    if (isTouching) {
+        if (state != State::ATTACKING) {
             state = State::ATTACKING;
             attackStartTime = now;
             animFrame = 2;
-        } else {
-            moveToward(playerRect, obstacles);
+            if (facingLeft) {
+        attackBox = { rect.x - 32, rect.y, 32, 32 };
+    } else {
+        attackBox = { rect.x + rect.w, rect.y, 32, 32 };
+    }
+        } else if (now - attackStartTime >= 500) {
+            attackStartTime = now;
+            animFrame = 2;
         }
+    } else {
+        state = State::MOVING;
+        moveToward(playerRect, obstacles);
+        attackBox = {0, 0, 0, 0};
+    }
+
+    if (playerRect.x < rect.x) {
+        facingLeft = true;
+    } else if (playerRect.x > rect.x) {
+        facingLeft = false;
     }
 
     if (now - lastAnimTime > 100) {
@@ -44,11 +55,19 @@ void Enemy::update(const SDL_Rect& playerRect, const std::vector<Obstacle>& obst
     }
 }
 
+
 void Enemy::render(SDL_Renderer* renderer) {
     SDL_Rect screenRect = rect;
     SDL_Rect src = getAnimSrcRect();
-    SDL_RenderCopy(renderer, texture, &src, &screenRect);
+
+    SDL_RendererFlip flip = facingLeft ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
+    SDL_RenderCopyEx(renderer, texture, &src, &screenRect, 0, nullptr, flip);
+
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    SDL_Rect drawBox = { attackBox.x, attackBox.y, attackBox.w, attackBox.h };
+    SDL_RenderDrawRect(renderer, &drawBox);
 }
+
 
 
 SDL_Rect Enemy::getAnimSrcRect() const {
