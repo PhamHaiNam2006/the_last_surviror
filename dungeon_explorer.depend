@@ -80,12 +80,12 @@
 	"enemy.h"
 	<cmath>
 
-1746182975 e:\learning_material\code_blocks\dungeon_explorer\enemy.h
+1746248952 e:\learning_material\code_blocks\dungeon_explorer\enemy.h
 	<SDL.h>
 	<vector>
 	"obstacle.h"
 
-1746197295 source:e:\learning_material\code_blocks\dungeon_explorer\enemy.cpp
+1746248952 source:e:\learning_material\code_blocks\dungeon_explorer\enemy.cpp
 	"enemy.h"
 	"movement.h"
 	<cmath>

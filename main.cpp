@@ -74,8 +74,8 @@ int main(int argc, char* argv[]) {
     SDL_Texture* slashTexture = IMG_LoadTexture(renderer, "png_file/main_char/slash.png");
 
     vector<Enemy> enemy = {
-        Enemy(enemyTexture, 160, 320),
-        Enemy(enemyTexture, 200, 200)
+        Enemy(enemyTexture, 160, 320, 100),
+        Enemy(enemyTexture, 200, 200, 100)
     };
 
     SDL_Rect playerSrc = { 0, 0, 12, 16 };
@@ -94,6 +94,8 @@ int main(int argc, char* argv[]) {
     Uint32 lastAttackTime = 0;
     const Uint32 attackCooldown = 500;
     SDL_Rect playerAttackBox = {0, 0, 0, 0};
+    const Uint32 hitInvis = 300;
+    Uint32 lastHit = 0;
 
     bool showSlash = false;
     SDL_Rect slashSrc = {0, 0, 12, 48};
@@ -239,8 +241,10 @@ int main(int argc, char* argv[]) {
 
             if (showSlash && enemy[n].isAlive()) {
                 SDL_Rect enemyHitBox = enemy[n].getHitbox();
-                if (SDL_HasIntersection(&slashDest, &enemyHitBox)) {
-                    enemy[n].kill();
+                Uint32 hit = SDL_GetTicks();
+                if (SDL_HasIntersection(&slashDest, &enemyHitBox) && hit - lastHit >= hitInvis) {
+                    enemy[n].getDamage(50);
+                    lastHit = SDL_GetTicks();
                 }
             }
 

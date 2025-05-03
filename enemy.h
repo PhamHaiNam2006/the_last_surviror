@@ -7,14 +7,14 @@
 
 class Enemy {
 public:
-    Enemy(SDL_Texture* tex, int x, int y);
+    Enemy(SDL_Texture* tex, int x, int y, int heal);
     void update(const SDL_Rect& playerRect, const std::vector<Obstacle>& obstacles);
     void render(SDL_Renderer* renderer);
     SDL_Rect getAttackBox() const;
 
     bool alive = true;
     bool isAlive() const { return alive; }
-    void kill() { alive = false; }
+    void getDamage(int damage) { health = (health - damage > 0) ? health - damage : 0; }
 
     SDL_Rect getHitbox() const { return rect; }
 
@@ -36,6 +36,7 @@ private:
     SDL_Rect getAnimSrcRect() const;
     bool facingLeft;
     SDL_Rect attackBox;
+    int health;
 
     Uint32 attackStartTime = 0;
 

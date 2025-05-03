@@ -2,10 +2,11 @@
 #include "movement.h"
 #include <cmath>
 
-Enemy::Enemy(SDL_Texture* tex, int x, int y) {
+Enemy::Enemy(SDL_Texture* tex, int x, int y, int heal) {
     texture = tex;
     rect = { x, y, 32, 32 };
     state = State::MOVING;
+    health = heal;
 }
 
 SDL_Rect Enemy::getAttackBox() const {
@@ -13,6 +14,9 @@ SDL_Rect Enemy::getAttackBox() const {
 }
 
 void Enemy::update(const SDL_Rect& playerRect, const std::vector<Obstacle>& obstacles) {
+    if (health == 0) {
+        alive = false;
+    }
     if (!alive) return;
 
     Uint32 now = SDL_GetTicks();
