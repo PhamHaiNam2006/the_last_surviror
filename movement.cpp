@@ -12,12 +12,12 @@ bool willCollide(const SDL_Rect& nextPos, const std::vector<Obstacle>& obstacles
     return false;
 }
 
-void handleMovement(SDL_Rect& playerRect, const std::vector<Obstacle>& obstacles, int &n, int sprint) {
+void handleMovement(SDL_Rect& playerRect, const std::vector<Obstacle>& obstacles, int sprint) {
     SDL_Rect simulatedHitbox;
     const SDL_Rect hitboxOffset = { -8, -4, 32, 32 };
     const Uint8* keystates = SDL_GetKeyboardState(NULL);
 
-    int speed = 2 * sprint;
+    int speed = 4 * sprint;
 
     SDL_Rect originalPos = playerRect;
 
@@ -69,10 +69,10 @@ void handleMovement(SDL_Rect& playerRect, const std::vector<Obstacle>& obstacles
             playerRect.x = originalPos.x;
         }
     }
-    if (playerRect.x < 0) playerRect.x = 800 - playerRect.w, n--;
-    if (playerRect.y < 0) playerRect.y = 600 - playerRect.h;
-    if (playerRect.x + playerRect.w > 800) playerRect.x = 0, n++;
-    if (playerRect.y + playerRect.h > 600) playerRect.y = 0;
+    if (playerRect.x < 0) playerRect.x = 0;
+    if (playerRect.y < 0) playerRect.y = 0;
+    if (playerRect.x + playerRect.w > SCREEN_WIDTH) playerRect.x = SCREEN_WIDTH - playerRect.w;
+    if (playerRect.y + playerRect.h > SCREEN_HEIGHT) playerRect.y = SCREEN_HEIGHT - playerRect.h;
 }
 
 

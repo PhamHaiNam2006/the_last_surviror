@@ -64,6 +64,20 @@ void Enemy::render(SDL_Renderer* renderer) {
 
     SDL_RendererFlip flip = facingLeft ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
     SDL_RenderCopyEx(renderer, texture, &src, &screenRect, 0, nullptr, flip);
+
+    int barWidth = 30;
+int barHeight = 4;
+int barX = rect.x + (rect.w - barWidth) / 2;
+int barY = rect.y - 10;
+int healthBarWidth = (health > 0) ? (barWidth * health / 100) : 0;
+
+SDL_Rect back = { barX, barY, barWidth, barHeight };
+SDL_Rect fill = { barX, barY, healthBarWidth, barHeight };
+
+SDL_SetRenderDrawColor(renderer, 100, 0, 0, 255); // dark red background
+SDL_RenderFillRect(renderer, &back);
+SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); // green foreground
+SDL_RenderFillRect(renderer, &fill);
 }
 
 

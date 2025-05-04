@@ -6,6 +6,6 @@
 #include "obstacle.h"
 
 bool willCollide(const SDL_Rect& nextPos, const std::vector<Obstacle>& obstacles);
-void handleMovement(SDL_Rect& playerRect, const std::vector<Obstacle>& obstacles, int &n, int sprint);
+void handleMovement(SDL_Rect& playerRect, const std::vector<Obstacle>& obstacles, int sprint);
 
 #endif

@@ -6,13 +6,13 @@
 #include "defs.h"
 #include "obstacle.h"
 #include "movement.h"
-#include "map_manager.h"
+#include "map_data.h"
 #include "enemy.h"
+#include "enemy_spawner.h"
 
 using namespace std;
 
 const char* WINDOW_TITLE = "Dungeon Explorer";
-MapManager mapManager;
 
 enum class GameState {
     MENU,
@@ -72,11 +72,7 @@ int main(int argc, char* argv[]) {
     SDL_Texture* tileTexture = IMG_LoadTexture(renderer, "png_file/environment/tiles_sewers.png");
     SDL_Texture* enemyTexture = IMG_LoadTexture(renderer, "png_file/enemy/rat.png");
     SDL_Texture* slashTexture = IMG_LoadTexture(renderer, "png_file/main_char/slash.png");
-
-    vector<Enemy> enemy = {
-        Enemy(enemyTexture, 160, 320, 100),
-        Enemy(enemyTexture, 200, 200, 100)
-    };
+    vector<Enemy> enemies;
 
     SDL_Rect playerSrc = { 0, 0, 12, 16 };
     SDL_Rect playerDest = { SCREEN_WIDTH / 2 - 10, SCREEN_HEIGHT / 2 - 12, 24, 32 };
@@ -87,7 +83,7 @@ int main(int argc, char* argv[]) {
     int playerStamina = 100;
     int maxStamina = 100;
     Uint32 runOutStamina = 0;
-    const Uint32 runCooldown = 2000;
+    const Uint32 runCooldown = 500;
 
     bool playerAttacking = false;
     Uint32 attackStartTime = 0;
@@ -103,9 +99,12 @@ int main(int argc, char* argv[]) {
     Uint32 slashStartTime = 0;
     const Uint32 slashDuration = 200;
 
-    mapManager.loadMaps();
-    mapManager.setCurrentMap(0);
-    int n=0;
+    vector<Obstacle> obstacles = loadMapObstacles1();
+
+    int mapWidth = SCREEN_WIDTH;
+    int mapHeight = SCREEN_HEIGHT;
+    int n=5;
+    spawnEnemies(enemies, enemyTexture, n, SCREEN_WIDTH, SCREEN_HEIGHT, playerDest, obstacles);
 
     TTF_Font* font = TTF_OpenFont("pixel_font.ttf", 24);
     GameState gameState = GameState::MENU;
@@ -178,7 +177,7 @@ int main(int argc, char* argv[]) {
                 slashStartTime = SDL_GetTicks();
                 currentFrame = 13;
             } else if (SDL_GetTicks() - lastAttackTime >= slashDuration) {
-                handleMovement(playerDest, mapManager.getCurrentMap(), n, sprint);
+                handleMovement(playerDest, obstacles,sprint);
             }
 
             if (playerAttacking) {
@@ -212,9 +211,8 @@ int main(int argc, char* argv[]) {
 
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
             SDL_RenderClear(renderer);
-            mapManager.setCurrentMap(n);
 
-            for (const auto& o : mapManager.getCurrentMap()) {
+            for (const auto& o : obstacles) {
                 SDL_Rect dest = o.getRect();
                 SDL_Rect src = o.getTileClip();
                 SDL_RenderCopy(renderer, tileTexture, &src, &dest);
@@ -239,18 +237,28 @@ int main(int argc, char* argv[]) {
                 SDL_RenderCopyEx(renderer, slashTexture, &slashSrc, &slashDest, 0, nullptr, flip);
             }
 
-            if (showSlash && enemy[n].isAlive()) {
-                SDL_Rect enemyHitBox = enemy[n].getHitbox();
+            if (showSlash) {
                 Uint32 hit = SDL_GetTicks();
-                if (SDL_HasIntersection(&slashDest, &enemyHitBox) && hit - lastHit >= hitInvis) {
-                    enemy[n].getDamage(50);
-                    lastHit = SDL_GetTicks();
+                for (auto& e : enemies) {
+                    SDL_Rect r = e.getHitbox();
+                    if (e.isAlive() && SDL_HasIntersection(&slashDest, &r) && hit - lastHit >= hitInvis) {
+                        e.getDamage(50);
+                        lastHit = hit;
+                        break;
+                    }
                 }
             }
 
-            if (enemy[n].isAlive()) {
-                enemy[n].update(playerDest, mapManager.getCurrentMap());
-                enemy[n].render(renderer);
+            for (auto& e : enemies) {
+                if (e.isAlive()) {
+                    e.update(playerDest, obstacles);
+                    e.render(renderer);
+                }
+            }
+
+            if (noEnemiesAlive(enemies)) {
+                    n++;
+                spawnEnemies(enemies, enemyTexture, n, mapWidth, mapHeight, playerDest, obstacles);
             }
 
             SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
