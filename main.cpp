@@ -3,6 +3,7 @@
 #include <SDL_ttf.h>
 #include <vector>
 #include <iostream>
+#include <algorithm>
 #include "defs.h"
 #include "obstacle.h"
 #include "movement.h"
@@ -104,7 +105,12 @@ int main(int argc, char* argv[]) {
     int mapWidth = SCREEN_WIDTH;
     int mapHeight = SCREEN_HEIGHT;
     int n=5;
+
     spawnEnemies(enemies, enemyTexture, n, SCREEN_WIDTH, SCREEN_HEIGHT, playerDest, obstacles);
+
+    for (auto& e : enemies) {
+        e.setAllEnemies(&enemies);
+    }
 
     TTF_Font* font = TTF_OpenFont("pixel_font.ttf", 24);
     GameState gameState = GameState::MENU;
@@ -256,9 +262,17 @@ int main(int argc, char* argv[]) {
                 }
             }
 
+            enemies.erase(
+                remove_if(enemies.begin(), enemies.end(),
+                                [](const Enemy& e) { return !e.isAlive(); }),
+                enemies.end());
+
             if (noEnemiesAlive(enemies)) {
-                    n++;
+                n++;
                 spawnEnemies(enemies, enemyTexture, n, mapWidth, mapHeight, playerDest, obstacles);
+                for (auto& e : enemies) {
+                    e.setAllEnemies(&enemies);
+                }
             }
 
             SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);

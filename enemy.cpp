@@ -13,6 +13,16 @@ SDL_Rect Enemy::getAttackBox() const {
     return attackBox;
 }
 
+bool Enemy::collidesWithOtherEnemies(const SDL_Rect& rect, const std::vector<Enemy>& others) {
+    for (const auto& e : others) {
+        if (&e == this) continue;
+        if (SDL_HasIntersection(&rect, &e.rect)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void Enemy::update(const SDL_Rect& playerRect, const std::vector<Obstacle>& obstacles) {
     if (health == 0) {
         alive = false;
@@ -66,18 +76,18 @@ void Enemy::render(SDL_Renderer* renderer) {
     SDL_RenderCopyEx(renderer, texture, &src, &screenRect, 0, nullptr, flip);
 
     int barWidth = 30;
-int barHeight = 4;
-int barX = rect.x + (rect.w - barWidth) / 2;
-int barY = rect.y - 10;
-int healthBarWidth = (health > 0) ? (barWidth * health / 100) : 0;
+    int barHeight = 4;
+    int barX = rect.x + (rect.w - barWidth) / 2;
+    int barY = rect.y - 10;
+    int healthBarWidth = (health > 0) ? (barWidth * health / 100) : 0;
 
-SDL_Rect back = { barX, barY, barWidth, barHeight };
-SDL_Rect fill = { barX, barY, healthBarWidth, barHeight };
+    SDL_Rect back = { barX, barY, barWidth, barHeight };
+    SDL_Rect fill = { barX, barY, healthBarWidth, barHeight };
 
-SDL_SetRenderDrawColor(renderer, 100, 0, 0, 255); // dark red background
-SDL_RenderFillRect(renderer, &back);
-SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); // green foreground
-SDL_RenderFillRect(renderer, &fill);
+    SDL_SetRenderDrawColor(renderer, 100, 0, 0, 255);
+    SDL_RenderFillRect(renderer, &back);
+    SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+    SDL_RenderFillRect(renderer, &fill);
 }
 
 
@@ -104,14 +114,14 @@ void Enemy::moveToward(const SDL_Rect& playerRect, const std::vector<Obstacle>& 
     else if (diffY > 0) dy = 2;
 
     SDL_Rect nextX = rect;
+    SDL_Rect nextY = rect;
     nextX.x += dx;
-    if (!willCollide(nextX, obstacles)) {
+    nextY.y += dy;
+    if (!willCollide(nextX, obstacles)&&!collidesWithOtherEnemies(nextX, *allEnemies)) {
         rect.x = nextX.x;
     }
 
-    SDL_Rect nextY = rect;
-    nextY.y += dy;
-    if (!willCollide(nextY, obstacles)) {
+    if (!willCollide(nextY, obstacles)&&!collidesWithOtherEnemies(nextY, *allEnemies)) {
         rect.y = nextY.y;
     }
 }

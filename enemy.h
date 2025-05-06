@@ -18,12 +18,16 @@ public:
 
     SDL_Rect getHitbox() const { return rect; }
 
+    bool collidesWithOtherEnemies(const SDL_Rect& rect, const std::vector<Enemy>& others);
+
+    void setAllEnemies(std::vector<Enemy>* enemies) { allEnemies = enemies; }
+
 private:
     SDL_Rect rect;
     SDL_Texture* texture;
 
     SDL_Rect playerLastKnownPos;
-    const int ATTACK_RANGE = 32;
+    int ATTACK_RANGE = 32;
 
     enum class State {
         MOVING,
@@ -32,7 +36,7 @@ private:
 
     int animFrame = 0;
     Uint32 lastAnimTime = 0;
-    const int frameW = 16, frameH = 15;
+    int frameW = 16, frameH = 15;
     SDL_Rect getAnimSrcRect() const;
     bool facingLeft;
     SDL_Rect attackBox;
@@ -42,6 +46,8 @@ private:
 
     void moveToward(const SDL_Rect& playerRect, const std::vector<Obstacle>& obstacles);
     bool touchingPlayer(const SDL_Rect& playerRect);
+
+    std::vector<Enemy>* allEnemies = nullptr;
 };
 
 #endif
