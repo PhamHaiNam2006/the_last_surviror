@@ -76,7 +76,7 @@ int main(int argc, char* argv[]) {
     vector<Enemy> enemies;
 
     SDL_Rect playerSrc = { 0, 0, 12, 16 };
-    SDL_Rect playerDest = { SCREEN_WIDTH / 2 - 10, SCREEN_HEIGHT / 2 - 12, 24, 32 };
+    SDL_Rect playerDest = { SCREEN_WIDTH / 2 - 10, SCREEN_HEIGHT / 2 - 11, 24, 32 };
 
     int playerHealth = 100;
     int maxHealth = 100;
@@ -91,8 +91,10 @@ int main(int argc, char* argv[]) {
     Uint32 lastAttackTime = 0;
     const Uint32 attackCooldown = 500;
     SDL_Rect playerAttackBox = {0, 0, 0, 0};
-    const Uint32 hitInvis = 300;
+    const Uint32 hitInvis = 400;
+    const Uint32 playerInvis = 50;
     Uint32 lastHit = 0;
+    Uint32 playerHit = 0;
 
     bool showSlash = false;
     SDL_Rect slashSrc = {0, 0, 12, 48};
@@ -104,9 +106,10 @@ int main(int argc, char* argv[]) {
 
     int mapWidth = SCREEN_WIDTH;
     int mapHeight = SCREEN_HEIGHT;
+    int wave = 1;
     int n=5;
 
-    spawnEnemies(enemies, enemyTexture, n, SCREEN_WIDTH, SCREEN_HEIGHT, playerDest, obstacles);
+    spawnEnemies(enemies, enemyTexture, n, SCREEN_WIDTH, SCREEN_HEIGHT, playerDest, obstacles, 100);
 
     for (auto& e : enemies) {
         e.setAllEnemies(&enemies);
@@ -259,7 +262,15 @@ int main(int argc, char* argv[]) {
                 if (e.isAlive()) {
                     e.update(playerDest, obstacles);
                     e.render(renderer);
+                    Uint32 hit = SDL_GetTicks();
+                    if (e.touchingPlayer(playerDest)&&hit - playerHit >= playerInvis){
+                        playerHealth-=1;
+                        playerHit = hit;
+                    }
                 }
+            }
+            if (playerHealth == 0) {
+                running = false;
             }
 
             enemies.erase(
@@ -269,7 +280,8 @@ int main(int argc, char* argv[]) {
 
             if (noEnemiesAlive(enemies)) {
                 n++;
-                spawnEnemies(enemies, enemyTexture, n, mapWidth, mapHeight, playerDest, obstacles);
+                wave++;
+                spawnEnemies(enemies, enemyTexture, n, mapWidth, mapHeight, playerDest, obstacles, 100 * (1+(float)(wave-1)*0.05));
                 for (auto& e : enemies) {
                     e.setAllEnemies(&enemies);
                 }

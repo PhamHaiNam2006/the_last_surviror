@@ -22,6 +22,8 @@ public:
 
     void setAllEnemies(std::vector<Enemy>* enemies) { allEnemies = enemies; }
 
+    bool touchingPlayer(const SDL_Rect& playerRect);
+
 private:
     SDL_Rect rect;
     SDL_Texture* texture;
@@ -45,7 +47,6 @@ private:
     Uint32 attackStartTime = 0;
 
     void moveToward(const SDL_Rect& playerRect, const std::vector<Obstacle>& obstacles);
-    bool touchingPlayer(const SDL_Rect& playerRect);
 
     std::vector<Enemy>* allEnemies = nullptr;
 };

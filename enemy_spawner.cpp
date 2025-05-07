@@ -12,7 +12,7 @@ bool collidesWithObstacles(const SDL_Rect& rect, const std::vector<Obstacle>& ob
     return false;
 }
 
-void spawnEnemies(std::vector<Enemy>& enemies, SDL_Texture* enemyTexture, int count, int mapWidth, int mapHeight, const SDL_Rect& playerRect, const std::vector<Obstacle>& obstacles) {
+void spawnEnemies(std::vector<Enemy>& enemies, SDL_Texture* enemyTexture, int count, int mapWidth, int mapHeight, const SDL_Rect& playerRect, const std::vector<Obstacle>& obstacles, float health) {
     enemies.clear();
     const int TILE_SIZE = 32;
     const int MIN_DISTANCE = TILE_SIZE * 5;
@@ -31,7 +31,7 @@ void spawnEnemies(std::vector<Enemy>& enemies, SDL_Texture* enemyTexture, int co
             int distSquared = dx * dx + dy * dy;
 
             if (distSquared >= MIN_DISTANCE * MIN_DISTANCE && !collidesWithObstacles(tryRect, obstacles)) {
-                enemies.emplace_back(enemyTexture, x, y, 100);
+                enemies.emplace_back(enemyTexture, x, y, health);
                 break;
             }
             attempts++;
