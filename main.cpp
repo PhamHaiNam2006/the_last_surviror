@@ -17,6 +17,9 @@ const char* WINDOW_TITLE = "Dungeon Explorer";
 
 enum class GameState {
     MENU,
+    TUTORIAL,
+    OPTIONS,
+    QUIT,
     PLAYING
 };
 
@@ -38,33 +41,147 @@ void RenderText(SDL_Renderer* renderer, TTF_Font* font, const std::string& text,
     SDL_DestroyTexture(texture);
 }
 
-void renderStartScreen(SDL_Renderer* renderer, TTF_Font* font) {
+GameState gameState = GameState::MENU;
+int currentTrackIndex = 0;
+Mix_Music* playingMusic[3] = {nullptr, nullptr, nullptr};
+
+void musicFinishedCallback() {
+    if (gameState == GameState::PLAYING) {
+        currentTrackIndex = (currentTrackIndex + 1) % 3;
+        Mix_PlayMusic(playingMusic[currentTrackIndex], 1);
+    }
+}
+
+void renderTutorialScreen(SDL_Renderer* renderer, TTF_Font* font) {
     SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
     SDL_RenderClear(renderer);
 
     SDL_Color white = {255, 255, 255, 255};
-    SDL_Surface* textSurface = TTF_RenderText_Solid(font, "Start Game", white);
-    SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
 
-    SDL_Rect buttonRect = {
-        (SCREEN_WIDTH - 200) / 2,
-        (SCREEN_HEIGHT - 60) / 2,
-        200,
-        60
+    const char* lines[] = {
+        "Arrow keys to move",
+        "Press Space to attack",
+        "Enemies will come in waves.",
+        "After each wave, choose a stat upgrade.",
+        "The game ends after 15 minutes or if the player dies."
     };
 
-    SDL_SetRenderDrawColor(renderer, 70, 70, 200, 255);
-    SDL_RenderFillRect(renderer, &buttonRect);
-    SDL_RenderCopy(renderer, textTexture, nullptr, &buttonRect);
+    int lineCount = sizeof(lines) / sizeof(lines[0]);
+    int spacing = 10;
+    int y = 100;
 
-    SDL_FreeSurface(textSurface);
-    SDL_DestroyTexture(textTexture);
+    for (int i = 0; i < lineCount; ++i) {
+        SDL_Surface* surface = TTF_RenderText_Solid(font, lines[i], white);
+        SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+
+        int textW, textH;
+        SDL_QueryTexture(texture, nullptr, nullptr, &textW, &textH);
+        SDL_Rect dest = {
+            (SCREEN_WIDTH - textW) / 2,
+            y,
+            textW,
+            textH
+        };
+        SDL_RenderCopy(renderer, texture, nullptr, &dest);
+
+        y += textH + spacing;
+
+        SDL_FreeSurface(surface);
+        SDL_DestroyTexture(texture);
+    }
+
+    SDL_Rect backButton = {
+        (SCREEN_WIDTH - 150) / 2,
+        SCREEN_HEIGHT - 100,
+        150,
+        50
+    };
+
+    SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
+    SDL_RenderFillRect(renderer, &backButton);
+
+    SDL_Surface* backSurface = TTF_RenderText_Solid(font, "Back", white);
+    SDL_Texture* backTexture = SDL_CreateTextureFromSurface(renderer, backSurface);
+
+    int textW, textH;
+    SDL_QueryTexture(backTexture, nullptr, nullptr, &textW, &textH);
+    SDL_Rect textRect = {
+        backButton.x + (backButton.w - textW) / 2,
+        backButton.y + (backButton.h - textH) / 2,
+        textW,
+        textH
+    };
+    SDL_RenderCopy(renderer, backTexture, nullptr, &textRect);
+
+    SDL_FreeSurface(backSurface);
+    SDL_DestroyTexture(backTexture);
+
     SDL_RenderPresent(renderer);
 }
+
+void renderStartScreen(SDL_Renderer* renderer, TTF_Font* font, TTF_Font* titleFont) {
+    SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
+    SDL_RenderClear(renderer);
+
+    SDL_Color white = {255, 255, 255, 255};
+
+    SDL_Surface* titleSurface1 = TTF_RenderText_Solid(titleFont, "The Last", white);
+    SDL_Texture* titleTexture1 = SDL_CreateTextureFromSurface(renderer, titleSurface1);
+    SDL_Rect titleRect1 = {(SCREEN_WIDTH - titleSurface1->w) / 2, 50, titleSurface1->w, titleSurface1->h};
+
+    SDL_Surface* titleSurface2 = TTF_RenderText_Solid(titleFont, "Survivor", white);
+    SDL_Texture* titleTexture2 = SDL_CreateTextureFromSurface(renderer, titleSurface2);
+    SDL_Rect titleRect2 = {(SCREEN_WIDTH - titleSurface2->w) / 2, titleRect1.y + titleRect1.h + 10, titleSurface2->w, titleSurface2->h};
+
+    SDL_RenderCopy(renderer, titleTexture1, nullptr, &titleRect1);
+    SDL_RenderCopy(renderer, titleTexture2, nullptr, &titleRect2);
+
+    SDL_FreeSurface(titleSurface1);
+    SDL_FreeSurface(titleSurface2);
+    SDL_DestroyTexture(titleTexture1);
+    SDL_DestroyTexture(titleTexture2);
+
+    const char* buttonLabels[4] = {"Start Game", "Tutorial", "Options", "Quit"};
+
+    int buttonWidth = 200;
+    int buttonHeight = 60;
+    int spacingX = 40;
+    int spacingY = 20;
+
+    int totalRowWidth = buttonWidth * 2 + spacingX;
+    int startX = (SCREEN_WIDTH - totalRowWidth) / 2;
+    int startY = titleRect2.y + titleRect2.h + 60;
+
+    for (int i = 0; i < 4; ++i) {
+        int row = i / 2;
+        int col = i % 2;
+
+        SDL_Surface* textSurface = TTF_RenderText_Solid(font, buttonLabels[i], white);
+        SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+
+        SDL_Rect buttonRect = {
+            startX + col * (buttonWidth + spacingX),
+            startY + row * (buttonHeight + spacingY),
+            buttonWidth,
+            buttonHeight
+        };
+
+        SDL_SetRenderDrawColor(renderer, 70, 70, 200, 255);
+        SDL_RenderFillRect(renderer, &buttonRect);
+        SDL_RenderCopy(renderer, textTexture, nullptr, &buttonRect);
+
+        SDL_FreeSurface(textSurface);
+        SDL_DestroyTexture(textTexture);
+    }
+
+    SDL_RenderPresent(renderer);
+}
+
 
 int main(int argc, char* argv[]) {
     SDL_Init(SDL_INIT_VIDEO);
     TTF_Init();
+    Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
 
     SDL_Window* window = SDL_CreateWindow(WINDOW_TITLE, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
@@ -73,7 +190,19 @@ int main(int argc, char* argv[]) {
     SDL_Texture* tileTexture = IMG_LoadTexture(renderer, "png_file/environment/tiles_sewers.png");
     SDL_Texture* enemyTexture = IMG_LoadTexture(renderer, "png_file/enemy/rat.png");
     SDL_Texture* slashTexture = IMG_LoadTexture(renderer, "png_file/main_char/slash.png");
+
     vector<Enemy> enemies;
+
+    Mix_Music* menuMusic = Mix_LoadMUS("ogg_file/back_ground.ogg");
+    Mix_Music* playingMusic[3] = {
+        Mix_LoadMUS("ogg_file/city_1.ogg"),
+        Mix_LoadMUS("ogg_file/city_2.ogg"),
+        Mix_LoadMUS("ogg_file/city_3.ogg")
+    };
+
+    GameState lastMusicState = GameState::MENU;
+
+    Mix_HookMusicFinished(musicFinishedCallback);
 
     SDL_Rect playerSrc = { 0, 0, 12, 16 };
     SDL_Rect playerDest = { SCREEN_WIDTH / 2 - 10, SCREEN_HEIGHT / 2 - 11, 24, 32 };
@@ -116,6 +245,7 @@ int main(int argc, char* argv[]) {
     }
 
     TTF_Font* font = TTF_OpenFont("pixel_font.ttf", 24);
+    TTF_Font* titleFont = TTF_OpenFont("pixel_font.ttf", 96);
     GameState gameState = GameState::MENU;
     PlayerState playerState = PlayerState::IDLE;
 
@@ -136,13 +266,70 @@ int main(int argc, char* argv[]) {
 
             if (gameState == GameState::MENU && event.type == SDL_MOUSEBUTTONDOWN) {
                 int x = event.button.x, y = event.button.y;
+
                 SDL_Point mousePoint = {x, y};
-                SDL_Rect startButton = { (SCREEN_WIDTH - 200) / 2, (SCREEN_HEIGHT - 60) / 2, 200, 60 };
-                if (SDL_PointInRect(&mousePoint, &startButton)) {
-                    gameState = GameState::PLAYING;
+
+                int buttonWidth = 200;
+                int buttonHeight = 60;
+                int spacingX = 40;
+                int spacingY = 20;
+
+                int totalRowWidth = buttonWidth * 2 + spacingX;
+                int startX = (SCREEN_WIDTH - totalRowWidth) / 2;
+
+                int titleFontSize = 72;
+                int titleHeight = titleFontSize * 2 + 10;
+                int startY = 50 + titleHeight + 140;
+
+                SDL_Rect buttons[4];
+
+                for (int i = 0; i < 4; ++i) {
+                    int row = i / 2;
+                    int col = i % 2;
+                    buttons[i] = {
+                        startX + col * (buttonWidth + spacingX),
+                        startY + row * (buttonHeight + spacingY),
+                        buttonWidth,
+                        buttonHeight
+                    };
+
+                    if (SDL_PointInRect(&mousePoint, &buttons[i])) {
+                        switch (i) {
+                            case 0: gameState = GameState::PLAYING; break;
+                            case 1: gameState = GameState::TUTORIAL; break;
+                            case 2: gameState = GameState::OPTIONS; break;
+                            case 3: gameState = GameState::QUIT; break;
+                        }
+                    }
                 }
             }
+            if (gameState == GameState::TUTORIAL && event.type == SDL_MOUSEBUTTONDOWN) {
+                int x = event.button.x, y = event.button.y;
+                SDL_Point mousePoint = {x, y};
 
+                SDL_Rect backButton = {
+                    (SCREEN_WIDTH - 150) / 2,
+                    SCREEN_HEIGHT - 100,
+                    150,
+                    50
+                };
+
+                if (SDL_PointInRect(&mousePoint, &backButton)) {
+                    gameState = GameState::MENU;
+                }
+            }
+        }
+
+        if (gameState != lastMusicState) {
+            Mix_HaltMusic();
+
+            if (gameState == GameState::PLAYING) {
+                currentTrackIndex = 2;
+                Mix_PlayMusic(playingMusic[currentTrackIndex], -1);
+            } else if (gameState == GameState::MENU || gameState == GameState::TUTORIAL) {
+                Mix_PlayMusic(menuMusic, -1);
+            }
+            lastMusicState = gameState;
         }
 
         if (gameState == GameState::PLAYING) {
@@ -307,7 +494,11 @@ int main(int argc, char* argv[]) {
             SDL_RenderPresent(renderer);
 
         } else if(gameState == GameState::MENU) {
-            renderStartScreen(renderer, font);
+            renderStartScreen(renderer, font, titleFont);
+        } else if(gameState == GameState::QUIT) {
+            running = false;
+        } else if (gameState == GameState::TUTORIAL) {
+            renderTutorialScreen(renderer, font);
         }
         SDL_Delay(16);
     }

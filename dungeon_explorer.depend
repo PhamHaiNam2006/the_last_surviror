@@ -24,7 +24,7 @@
 1743124304 e:\learning material\code blocks\dungeon_explorer\obstacle.h
 	<SDL.h>
 
-1746579112 source:e:\learning_material\code_blocks\dungeon_explorer\main.cpp
+1746627134 source:e:\learning_material\code_blocks\dungeon_explorer\main.cpp
 	<SDL.h>
 	<SDL_mixer.h>
 	<SDL_ttf.h>
@@ -51,7 +51,7 @@
 	<SDL.h>
 	<SDL_image.h>
 
-1746329337 source:e:\learning_material\code_blocks\dungeon_explorer\movement.cpp
+1746623704 source:e:\learning_material\code_blocks\dungeon_explorer\movement.cpp
 	"movement.h"
 	"defs.h"
 
@@ -82,7 +82,7 @@
 	"enemy.h"
 	<cmath>
 
-1746578961 e:\learning_material\code_blocks\dungeon_explorer\enemy.h
+1746605791 e:\learning_material\code_blocks\dungeon_explorer\enemy.h
 	<SDL.h>
 	<vector>
 	"obstacle.h"
@@ -110,9 +110,10 @@
 	<string>
 	<vector>
 
-1746578142 source:e:\learning_material\code_blocks\dungeon_explorer\enemy_spawner.cpp
+1746612195 source:e:\learning_material\code_blocks\dungeon_explorer\enemy_spawner.cpp
 	"enemy_spawner.h"
 	<cstdlib>
+	<random>
 
 1746578142 e:\learning_material\code_blocks\dungeon_explorer\enemy_spawner.h
 	<vector>

@@ -17,7 +17,7 @@ void handleMovement(SDL_Rect& playerRect, const std::vector<Obstacle>& obstacles
     const SDL_Rect hitboxOffset = { -8, -4, 32, 32 };
     const Uint8* keystates = SDL_GetKeyboardState(NULL);
 
-    int speed = 4 * sprint;
+    int speed = 2 * sprint;
 
     SDL_Rect originalPos = playerRect;
 

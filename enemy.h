@@ -11,6 +11,7 @@ public:
     void update(const SDL_Rect& playerRect, const std::vector<Obstacle>& obstacles);
     void render(SDL_Renderer* renderer);
     SDL_Rect getAttackBox() const;
+    SDL_Rect getRect() const { return rect; }
 
     bool alive = true;
     bool isAlive() const { return alive; }
