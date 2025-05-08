@@ -52,6 +52,22 @@ void musicFinishedCallback() {
     }
 }
 
+void renderOption(SDL_Renderer* renderer, TTF_Font* font) {
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+
+    SDL_SetRenderDrawColor(renderer, 50, 50, 50, 180);
+    SDL_Rect popup = { SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 };
+    SDL_RenderFillRect(renderer, &popup);
+
+    SDL_Rect backButton = { popup.x + 50, popup.y + popup.h - 80, 120, 40 };
+    SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
+    SDL_RenderFillRect(renderer, &backButton);
+
+    SDL_Color white = {255, 255, 255};
+    RenderText(renderer, font, "Back", backButton.x + 20, backButton.y + 10, {255, 255, 255});
+    SDL_RenderPresent(renderer);
+}
+
 void renderTutorialScreen(SDL_Renderer* renderer, TTF_Font* font) {
     SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
     SDL_RenderClear(renderer);
@@ -247,6 +263,8 @@ int main(int argc, char* argv[]) {
     TTF_Font* font = TTF_OpenFont("pixel_font.ttf", 24);
     TTF_Font* titleFont = TTF_OpenFont("pixel_font.ttf", 96);
     GameState gameState = GameState::MENU;
+    GameState previousState = GameState::MENU;
+
     PlayerState playerState = PlayerState::IDLE;
 
     bool running = true;
@@ -316,6 +334,16 @@ int main(int argc, char* argv[]) {
 
                 if (SDL_PointInRect(&mousePoint, &backButton)) {
                     gameState = GameState::MENU;
+                }
+            }
+            if (gameState == GameState::OPTIONS && event.type == SDL_MOUSEBUTTONDOWN) {
+                int mx = event.button.x;
+                int my = event.button.y;
+
+                SDL_Rect backButton = { SCREEN_WIDTH / 4 + 50, SCREEN_HEIGHT / 4 + SCREEN_HEIGHT / 2 - 80, 120, 40 };
+                if (mx >= backButton.x && mx <= backButton.x + backButton.w &&
+                    my >= backButton.y && my <= backButton.y + backButton.h) {
+                    gameState = previousState;
                 }
             }
         }
@@ -499,6 +527,8 @@ int main(int argc, char* argv[]) {
             running = false;
         } else if (gameState == GameState::TUTORIAL) {
             renderTutorialScreen(renderer, font);
+        } else if (gameState == GameState::OPTIONS) {
+            renderOption(renderer, font);
         }
         SDL_Delay(16);
     }
