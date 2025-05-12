@@ -306,6 +306,15 @@ int main(int argc, char* argv[]) {
     int musicVolume = 50;
     int sfxVolume = 50;
 
+    Uint32 gameStartTime = 0;
+    Uint32 optionEnterTime = 0;
+    bool gameTimerActive = false;
+    bool gameEnded = false;
+    const Uint32 GAME_DURATION = 5 * 60 * 1000;
+
+    Uint32 cooldownStartTime = 0;
+    const Uint32 COOLDOWN_DURATION = 30 * 1000;
+
     while (running) {
         Uint32 now = SDL_GetTicks();
 
@@ -408,11 +417,49 @@ int main(int argc, char* argv[]) {
                     gameState = GameState::OPTIONS;
                 }
             }
+            if (gameEnded && event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
+                playerHealth = 100;
+                wave = 1;
+                n=5;
+
+                spawnEnemies(enemies, enemyTexture, n, SCREEN_WIDTH, SCREEN_HEIGHT, playerDest, obstacles, 100);
+                int mx = event.button.x;
+                int my = event.button.y;
+                SDL_Rect menuButton = { SCREEN_WIDTH / 4 + 30, SCREEN_HEIGHT / 4 + 130, 150, 50 };
+                SDL_Rect quitButton = { SCREEN_WIDTH / 4 + 240, SCREEN_HEIGHT / 4 + 130, 150, 50 };
+
+                if (mx >= menuButton.x && mx <= menuButton.x + menuButton.w &&
+                    my >= menuButton.y && my <= menuButton.y + menuButton.h) {
+                    gameState = GameState::MENU;
+                    gameEnded = false;
+                }
+
+                if (mx >= quitButton.x && mx <= quitButton.x + quitButton.w &&
+                    my >= quitButton.y && my <= quitButton.y + quitButton.h) {
+                    running = false;
+                }
+            }
+
+        }
+
+        if (gameState == GameState::OPTIONS && previousState == GameState::PLAYING) {
+            optionEnterTime = SDL_GetTicks();
+            gameTimerActive = false;
+        }
+
+        if (previousState == GameState::PLAYING && gameState == GameState::OPTIONS &&
+            event.type == SDL_MOUSEBUTTONDOWN) {
+            gameStartTime += SDL_GetTicks() - optionEnterTime;
+            cooldownStartTime += SDL_GetTicks() - optionEnterTime;
+            gameTimerActive = true;
         }
 
         if (lastMusicState == GameState::MENU && gameState == GameState::PLAYING) {
             musicPlayer.startPlaylist();
             lastMusicState = gameState;
+            cooldownStartTime = SDL_GetTicks();
+            gameTimerActive = true;
+            gameEnded = false;
         } else if (lastMusicState == GameState::PLAYING && gameState == GameState::MENU) {
             musicPlayer.playSingleMusic();
             lastMusicState = gameState;
@@ -544,8 +591,13 @@ int main(int argc, char* argv[]) {
                     }
                 }
             }
-            if (playerHealth == 0) {
-                running = false;
+            if (gameTimerActive) {
+                Uint32 elapsed = SDL_GetTicks() - gameStartTime;
+
+                if (elapsed >= GAME_DURATION || playerHealth == 0) {
+                    gameEnded = true;
+                    gameTimerActive = false;
+                }
             }
 
             enemies.erase(
@@ -580,6 +632,33 @@ int main(int argc, char* argv[]) {
             SDL_RenderFillRect(renderer, &staminaBack);
             SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
             SDL_RenderFillRect(renderer, &staminaFill);
+
+            Uint32 now = SDL_GetTicks();
+            Uint32 elapsed = now - gameStartTime;
+
+            char timerText[32];
+            snprintf(timerText, sizeof(timerText), "Time: %02d:%02d", elapsed / 60000, (elapsed / 1000) % 60);
+            RenderText(renderer, font, timerText, 20, 70, {255, 255, 255});
+
+            if (gameEnded) {
+                SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 200);
+                SDL_Rect overlay = { SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 };
+                SDL_RenderFillRect(renderer, &overlay);
+
+                RenderText(renderer, font, "Game Over", overlay.x + 80, overlay.y + 30, {255, 255, 255});
+                RenderText(renderer, font, "Return to Menu or Quit?", overlay.x + 40, overlay.y + 70, {200, 200, 200});
+
+                SDL_Rect menuButton = { overlay.x + 30, overlay.y + 130, 150, 50 };
+                SDL_Rect quitButton = { overlay.x + 240, overlay.y + 130, 150, 50 };
+
+                SDL_SetRenderDrawColor(renderer, 100, 100, 200, 255);
+                SDL_RenderFillRect(renderer, &menuButton);
+                SDL_RenderFillRect(renderer, &quitButton);
+
+                RenderText(renderer, font, "Menu", menuButton.x + 40, menuButton.y + 15, {255, 255, 255});
+                RenderText(renderer, font, "Quit", quitButton.x + 50, quitButton.y + 15, {255, 255, 255});
+            }
 
             SDL_RenderPresent(renderer);
 
