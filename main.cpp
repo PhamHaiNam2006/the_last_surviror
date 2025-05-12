@@ -4,12 +4,14 @@
 #include <vector>
 #include <iostream>
 #include <algorithm>
+#include <string>
 #include "defs.h"
 #include "obstacle.h"
 #include "movement.h"
 #include "map_data.h"
 #include "enemy.h"
 #include "enemy_spawner.h"
+#include "music_player.h"
 
 using namespace std;
 
@@ -41,17 +43,6 @@ void RenderText(SDL_Renderer* renderer, TTF_Font* font, const std::string& text,
     SDL_DestroyTexture(texture);
 }
 
-GameState gameState = GameState::MENU;
-int currentTrackIndex = 0;
-Mix_Music* playingMusic[3] = {nullptr, nullptr, nullptr};
-
-void musicFinishedCallback() {
-    if (gameState == GameState::PLAYING) {
-        currentTrackIndex = (currentTrackIndex + 1) % 3;
-        Mix_PlayMusic(playingMusic[currentTrackIndex], 1);
-    }
-}
-
 void renderOption(SDL_Renderer* renderer, TTF_Font* font) {
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
@@ -64,7 +55,7 @@ void renderOption(SDL_Renderer* renderer, TTF_Font* font) {
     SDL_RenderFillRect(renderer, &backButton);
 
     SDL_Color white = {255, 255, 255};
-    RenderText(renderer, font, "Back", backButton.x + 20, backButton.y + 10, {255, 255, 255});
+    RenderText(renderer, font, "Back", backButton.x + 20, backButton.y + 10, white);
     SDL_RenderPresent(renderer);
 }
 
@@ -79,7 +70,7 @@ void renderTutorialScreen(SDL_Renderer* renderer, TTF_Font* font) {
         "Press Space to attack",
         "Enemies will come in waves.",
         "After each wave, choose a stat upgrade.",
-        "The game ends after 15 minutes or if the player dies."
+        "The game ends after 5 minutes or if the player dies."
     };
 
     int lineCount = sizeof(lines) / sizeof(lines[0]);
@@ -206,19 +197,23 @@ int main(int argc, char* argv[]) {
     SDL_Texture* tileTexture = IMG_LoadTexture(renderer, "png_file/environment/tiles_sewers.png");
     SDL_Texture* enemyTexture = IMG_LoadTexture(renderer, "png_file/enemy/rat.png");
     SDL_Texture* slashTexture = IMG_LoadTexture(renderer, "png_file/main_char/slash.png");
+    SDL_Texture* cogTexture = IMG_LoadTexture(renderer, "png_file/environment/option.png");
 
     vector<Enemy> enemies;
 
-    Mix_Music* menuMusic = Mix_LoadMUS("ogg_file/back_ground.ogg");
-    Mix_Music* playingMusic[3] = {
-        Mix_LoadMUS("ogg_file/city_1.ogg"),
-        Mix_LoadMUS("ogg_file/city_2.ogg"),
-        Mix_LoadMUS("ogg_file/city_3.ogg")
-    };
+    MusicPlayer musicPlayer;
 
-    GameState lastMusicState = GameState::MENU;
+    musicPlayer.loadMusicFiles({
+        ("ogg_file/city_1.ogg"),
+        ("ogg_file/city_2.ogg"),
+        ("ogg_file/city_3.ogg")
+    });
 
-    Mix_HookMusicFinished(musicFinishedCallback);
+    musicPlayer.loadSingleMusic("ogg_file/back_ground.ogg");
+
+    GameState lastMusicState = GameState::PLAYING;
+
+    musicPlayer.playSingleMusic();
 
     SDL_Rect playerSrc = { 0, 0, 12, 16 };
     SDL_Rect playerDest = { SCREEN_WIDTH / 2 - 10, SCREEN_HEIGHT / 2 - 11, 24, 32 };
@@ -229,7 +224,7 @@ int main(int argc, char* argv[]) {
     int playerStamina = 100;
     int maxStamina = 100;
     Uint32 runOutStamina = 0;
-    const Uint32 runCooldown = 500;
+    const Uint32 runCooldown = 250;
 
     bool playerAttacking = false;
     Uint32 attackStartTime = 0;
@@ -246,6 +241,8 @@ int main(int argc, char* argv[]) {
     SDL_Rect slashDest = {0, 0, 24, 96};
     Uint32 slashStartTime = 0;
     const Uint32 slashDuration = 200;
+
+    SDL_Rect cogButton = { SCREEN_WIDTH - 60, 20, 32, 32 };
 
     vector<Obstacle> obstacles = loadMapObstacles1();
 
@@ -314,8 +311,8 @@ int main(int argc, char* argv[]) {
                     if (SDL_PointInRect(&mousePoint, &buttons[i])) {
                         switch (i) {
                             case 0: gameState = GameState::PLAYING; break;
-                            case 1: gameState = GameState::TUTORIAL; break;
-                            case 2: gameState = GameState::OPTIONS; break;
+                            case 1: previousState = gameState; gameState = GameState::TUTORIAL; break;
+                            case 2: previousState = gameState; gameState = GameState::OPTIONS; break;
                             case 3: gameState = GameState::QUIT; break;
                         }
                     }
@@ -333,7 +330,7 @@ int main(int argc, char* argv[]) {
                 };
 
                 if (SDL_PointInRect(&mousePoint, &backButton)) {
-                    gameState = GameState::MENU;
+                    gameState = previousState;
                 }
             }
             if (gameState == GameState::OPTIONS && event.type == SDL_MOUSEBUTTONDOWN) {
@@ -346,19 +343,27 @@ int main(int argc, char* argv[]) {
                     gameState = previousState;
                 }
             }
-        }
+            if (event.type == SDL_MOUSEBUTTONDOWN && gameState == GameState::PLAYING) {
+                previousState = gameState;
+                int mouseX = event.button.x;
+                int mouseY = event.button.y;
+                SDL_Rect cogButton = { SCREEN_WIDTH - 60, 20, 32, 32 };
 
-        if (gameState != lastMusicState) {
-            Mix_HaltMusic();
-
-            if (gameState == GameState::PLAYING) {
-                currentTrackIndex = 2;
-                Mix_PlayMusic(playingMusic[currentTrackIndex], -1);
-            } else if (gameState == GameState::MENU || gameState == GameState::TUTORIAL) {
-                Mix_PlayMusic(menuMusic, -1);
+                SDL_Point p = {mouseX, mouseY};
+                if (SDL_PointInRect(&p, &cogButton)) {
+                    gameState = GameState::OPTIONS;
+                }
             }
-            lastMusicState = gameState;
         }
+
+        if (lastMusicState == GameState::MENU && gameState == GameState::PLAYING) {
+            musicPlayer.startPlaylist();
+        } else if (lastMusicState == GameState::PLAYING && gameState == GameState::MENU) {
+            musicPlayer.playSingleMusic();
+        }
+        lastMusicState = gameState;
+
+        musicPlayer.update();
 
         if (gameState == GameState::PLAYING) {
             const Uint8* keystates = SDL_GetKeyboardState(NULL);
@@ -373,12 +378,12 @@ int main(int argc, char* argv[]) {
             }
 
             if (keystates[SDL_SCANCODE_LSHIFT] && playerStamina >= 2 && SDL_GetTicks() - runOutStamina >= runCooldown) {
-                sprint = 2;
+                sprint = 3;
             } else if (playerStamina == 0) {
                 runOutStamina = SDL_GetTicks();
             }
 
-            if (playerState == PlayerState::WALKING && sprint == 2) {
+            if (playerState == PlayerState::WALKING && sprint == 3) {
                 playerStamina = max(0, playerStamina - 2);
             } else if (playerStamina < maxStamina) {
                 playerStamina += 1;
@@ -502,6 +507,8 @@ int main(int argc, char* argv[]) {
                 }
             }
 
+            SDL_RenderCopy(renderer, cogTexture, nullptr, &cogButton);
+
             SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
             SDL_Rect healthBack = { 20, 20, 200, 20 };
             SDL_Rect healthFill = { 20, 20, 200 * playerHealth / maxHealth, 20 };
@@ -532,7 +539,8 @@ int main(int argc, char* argv[]) {
         }
         SDL_Delay(16);
     }
-
+    musicPlayer.cleanup();
+    Mix_CloseAudio();
     TTF_CloseFont(font);
     TTF_Quit();
     SDL_DestroyRenderer(renderer);

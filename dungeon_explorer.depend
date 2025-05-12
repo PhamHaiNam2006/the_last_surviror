@@ -24,19 +24,21 @@
 1743124304 e:\learning material\code blocks\dungeon_explorer\obstacle.h
 	<SDL.h>
 
-1746627134 source:e:\learning_material\code_blocks\dungeon_explorer\main.cpp
+1747044236 source:e:\learning_material\code_blocks\dungeon_explorer\main.cpp
 	<SDL.h>
 	<SDL_mixer.h>
 	<SDL_ttf.h>
 	<vector>
 	<iostream>
 	<algorithm>
+	<string>
 	"defs.h"
 	"obstacle.h"
 	"movement.h"
 	"map_data.h"
 	"enemy.h"
 	"enemy_spawner.h"
+	"music_player.h"
 
 1746328487 e:\learning_material\code_blocks\dungeon_explorer\movement.h
 	<SDL.h>
@@ -120,4 +122,13 @@
 	<SDL.h>
 	"enemy.h"
 	"obstacle.h"
+
+1746845620 source:e:\learning_material\code_blocks\dungeon_explorer\music_player.cpp
+	"music_player.h"
+	<SDL.h>
+
+1746845620 e:\learning_material\code_blocks\dungeon_explorer\music_player.h
+	<SDL_mixer.h>
+	<string>
+	<vector>
 
