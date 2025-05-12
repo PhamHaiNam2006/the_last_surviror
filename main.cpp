@@ -43,21 +43,50 @@ void RenderText(SDL_Renderer* renderer, TTF_Font* font, const std::string& text,
     SDL_DestroyTexture(texture);
 }
 
-void renderOption(SDL_Renderer* renderer, TTF_Font* font) {
+void renderOption(SDL_Renderer* renderer, TTF_Font* font, GameState gameState, int musicVol, int sfxVol) {
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-
     SDL_SetRenderDrawColor(renderer, 50, 50, 50, 180);
     SDL_Rect popup = { SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 };
     SDL_RenderFillRect(renderer, &popup);
 
+    SDL_Color white = {255, 255, 255};
+
+    RenderText(renderer, font, "Music Volume", popup.x + 50, popup.y + 30, white);
+    RenderText(renderer, font, "SFX Volume", popup.x + 50, popup.y + 120, white);
+
+    const int buttonW = 50, buttonH = 30;
+    int values[] = {0, 25, 50, 75, 100};
+
+    SDL_Rect musicButtons[5];
+    SDL_Rect sfxButtons[5];
+
+    for (int i = 0; i < 5; ++i) {
+        musicButtons[i] = { popup.x + 50 + i * (buttonW + 10), popup.y + 60, buttonW, buttonH };
+        SDL_SetRenderDrawColor(renderer, (values[i] == musicVol ? 0 : 120), 180, 120, 255);
+        SDL_RenderFillRect(renderer, &musicButtons[i]);
+        RenderText(renderer, font, std::to_string(values[i]), musicButtons[i].x + 15, musicButtons[i].y + 5, white);
+
+        sfxButtons[i] = { popup.x + 50 + i * (buttonW + 10), popup.y + 150, buttonW, buttonH };
+        SDL_SetRenderDrawColor(renderer, (values[i] == sfxVol ? 0 : 120), 120, 180, 255);
+        SDL_RenderFillRect(renderer, &sfxButtons[i]);
+        RenderText(renderer, font, std::to_string(values[i]), sfxButtons[i].x + 15, sfxButtons[i].y + 5, white);
+    }
+
     SDL_Rect backButton = { popup.x + 50, popup.y + popup.h - 80, 120, 40 };
     SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
     SDL_RenderFillRect(renderer, &backButton);
-
-    SDL_Color white = {255, 255, 255};
     RenderText(renderer, font, "Back", backButton.x + 20, backButton.y + 10, white);
+
+    if (gameState == GameState::PLAYING) {
+        SDL_Rect toMenu = { popup.x + popup.w - 170, popup.y + popup.h - 80, 120, 40 };
+        SDL_SetRenderDrawColor(renderer, 150, 50, 50, 255);
+        SDL_RenderFillRect(renderer, &toMenu);
+        RenderText(renderer, font, "To Menu", toMenu.x + 10, toMenu.y + 10, white);
+    }
+
     SDL_RenderPresent(renderer);
 }
+
 
 void renderTutorialScreen(SDL_Renderer* renderer, TTF_Font* font) {
     SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
@@ -66,10 +95,11 @@ void renderTutorialScreen(SDL_Renderer* renderer, TTF_Font* font) {
     SDL_Color white = {255, 255, 255, 255};
 
     const char* lines[] = {
-        "Arrow keys to move",
+        "Press Arrow keys to move",
         "Press Space to attack",
-        "Enemies will come in waves.",
-        "After each wave, choose a stat upgrade.",
+        "You are fighting the enemy for a while, so no natural healing or healing potion",
+        "Enemies will come in large wave",
+        "Your objective in this game is to survive for 5 minutes as you see a big monster comming in your way",
         "The game ends after 5 minutes or if the player dies."
     };
 
@@ -273,6 +303,9 @@ int main(int argc, char* argv[]) {
     const Uint32 animDelay = 100;
     int sprint;
 
+    int musicVolume = 50;
+    int sfxVolume = 50;
+
     while (running) {
         Uint32 now = SDL_GetTicks();
 
@@ -342,6 +375,27 @@ int main(int argc, char* argv[]) {
                     my >= backButton.y && my <= backButton.y + backButton.h) {
                     gameState = previousState;
                 }
+
+                SDL_Rect toMenu = { SCREEN_WIDTH * 3/4 - 150, SCREEN_HEIGHT / 4 + SCREEN_HEIGHT / 2 - 80, 120, 40 };
+                if (previousState == GameState::PLAYING && mx >= toMenu.x && mx <= toMenu.x + toMenu.w &&
+                    my >= toMenu.y && my <= toMenu.y + toMenu.h) {
+                    gameState = GameState::MENU;
+                }
+
+                int values[] = {0, 25, 50, 75, 100};
+                for (int i = 0; i < 5; ++i) {
+                    SDL_Rect musicBtn = { SCREEN_WIDTH / 4 + 50 + i * 60, SCREEN_HEIGHT / 4 + 60, 50, 30 };
+                    SDL_Rect sfxBtn   = { SCREEN_WIDTH / 4 + 50 + i * 60, SCREEN_HEIGHT / 4 + 150, 50, 30 };
+
+                    if (mx >= musicBtn.x && mx <= musicBtn.x + musicBtn.w && my >= musicBtn.y && my <= musicBtn.y + musicBtn.h) {
+                        musicVolume = values[i];
+                        Mix_VolumeMusic((MIX_MAX_VOLUME * musicVolume) / 100);
+                    }
+
+                    if (mx >= sfxBtn.x && mx <= sfxBtn.x + sfxBtn.w && my >= sfxBtn.y && my <= sfxBtn.y + sfxBtn.h) {
+                        sfxVolume = values[i];
+                    }
+                }
             }
             if (event.type == SDL_MOUSEBUTTONDOWN && gameState == GameState::PLAYING) {
                 previousState = gameState;
@@ -358,10 +412,11 @@ int main(int argc, char* argv[]) {
 
         if (lastMusicState == GameState::MENU && gameState == GameState::PLAYING) {
             musicPlayer.startPlaylist();
+            lastMusicState = gameState;
         } else if (lastMusicState == GameState::PLAYING && gameState == GameState::MENU) {
             musicPlayer.playSingleMusic();
+            lastMusicState = gameState;
         }
-        lastMusicState = gameState;
 
         musicPlayer.update();
 
@@ -535,7 +590,7 @@ int main(int argc, char* argv[]) {
         } else if (gameState == GameState::TUTORIAL) {
             renderTutorialScreen(renderer, font);
         } else if (gameState == GameState::OPTIONS) {
-            renderOption(renderer, font);
+            renderOption(renderer, font, previousState, musicVolume, sfxVolume);
         }
         SDL_Delay(16);
     }
