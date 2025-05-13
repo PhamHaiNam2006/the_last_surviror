@@ -15,7 +15,11 @@ std::vector<Obstacle> loadMapObstacles1() {
                 type = 80;
             }
 
-            if ((x == 20 && y >= 4 && y <= 13)) {
+            if ((x == 20 && y >= 4 && y <= 13 && y != 6 && y != 7 && y != 10 && y != 11)) {
+                type = 65;
+            }
+
+            if (x >= 1 && x <= 18 && (y == 4 || y == 13 )) {
                 type = 65;
             }
 

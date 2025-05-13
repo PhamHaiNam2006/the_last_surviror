@@ -68,6 +68,7 @@ void renderTutorialScreen(SDL_Renderer* renderer, TTF_Font* font) {
         "Press Arrow keys to move",
         "Press Space to attack",
         "Enemies will come in large wave",
+        "Your objective is to survive",
         "The game ends after 5 minutes or if the player dies.",
         "Lore",
         "You have been fighting for your life for so long",
@@ -129,29 +130,15 @@ void renderTutorialScreen(SDL_Renderer* renderer, TTF_Font* font) {
     SDL_RenderPresent(renderer);
 }
 
-void renderStartScreen(SDL_Renderer* renderer, TTF_Font* font, TTF_Font* titleFont) {
+void renderStartScreen(SDL_Renderer* renderer, TTF_Font* font, TTF_Font* titleFont, SDL_Texture* menuBackground) {
     SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
     SDL_RenderClear(renderer);
 
     SDL_Color white = {255, 255, 255, 255};
 
-    SDL_Surface* titleSurface1 = TTF_RenderText_Solid(titleFont, "The Last", white);
-    SDL_Texture* titleTexture1 = SDL_CreateTextureFromSurface(renderer, titleSurface1);
-    SDL_Rect titleRect1 = {(SCREEN_WIDTH - titleSurface1->w) / 2, 50, titleSurface1->w, titleSurface1->h};
+    SDL_RenderCopy(renderer, menuBackground, NULL, NULL);
 
-    SDL_Surface* titleSurface2 = TTF_RenderText_Solid(titleFont, "Survivor", white);
-    SDL_Texture* titleTexture2 = SDL_CreateTextureFromSurface(renderer, titleSurface2);
-    SDL_Rect titleRect2 = {(SCREEN_WIDTH - titleSurface2->w) / 2, titleRect1.y + titleRect1.h + 10, titleSurface2->w, titleSurface2->h};
-
-    SDL_RenderCopy(renderer, titleTexture1, nullptr, &titleRect1);
-    SDL_RenderCopy(renderer, titleTexture2, nullptr, &titleRect2);
-
-    SDL_FreeSurface(titleSurface1);
-    SDL_FreeSurface(titleSurface2);
-    SDL_DestroyTexture(titleTexture1);
-    SDL_DestroyTexture(titleTexture2);
-
-    const char* buttonLabels[4] = {"Start Game", "Guide & Lore", "Options", "Quit"};
+    const char* buttonLabels[4] = {" Start Game ", "Guide & Lore", "   Options   ", "    Quit    "};
 
     int buttonWidth = 200;
     int buttonHeight = 60;
@@ -160,7 +147,7 @@ void renderStartScreen(SDL_Renderer* renderer, TTF_Font* font, TTF_Font* titleFo
 
     int totalRowWidth = buttonWidth * 2 + spacingX;
     int startX = (SCREEN_WIDTH - totalRowWidth) / 2;
-    int startY = titleRect2.y + titleRect2.h + 60;
+    int startY = 342;
 
     for (int i = 0; i < 4; ++i) {
         int row = i / 2;
@@ -175,9 +162,6 @@ void renderStartScreen(SDL_Renderer* renderer, TTF_Font* font, TTF_Font* titleFo
             buttonWidth,
             buttonHeight
         };
-
-        SDL_SetRenderDrawColor(renderer, 70, 70, 200, 255);
-        SDL_RenderFillRect(renderer, &buttonRect);
         SDL_RenderCopy(renderer, textTexture, nullptr, &buttonRect);
 
         SDL_FreeSurface(textSurface);

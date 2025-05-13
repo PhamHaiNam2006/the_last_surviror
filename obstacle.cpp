@@ -4,8 +4,7 @@ Obstacle::Obstacle(int x, int y, int w, int h, int t) {
     rect = {x,y,w,h};
     type=t;
     /*80=wall
-    18=healing on/off
-
+    65=baricage
     0=title*/
 }
 

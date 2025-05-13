@@ -15,7 +15,7 @@
 
 using namespace std;
 
-const char* WINDOW_TITLE = "Dungeon Explorer";
+const char* WINDOW_TITLE = "The Last Survivor";
 
 enum class PlayerState {
     IDLE,
@@ -36,6 +36,7 @@ int main(int argc, char* argv[]) {
     SDL_Texture* enemyTexture = IMG_LoadTexture(renderer, "png_file/enemy/rat.png");
     SDL_Texture* slashTexture = IMG_LoadTexture(renderer, "png_file/main_char/slash.png");
     SDL_Texture* cogTexture = IMG_LoadTexture(renderer, "png_file/environment/option.png");
+    SDL_Texture* menuBackground = IMG_LoadTexture(renderer, "png_file/environment/the_last_survivor.png");
 
     vector<Enemy> enemies;
 
@@ -480,7 +481,7 @@ int main(int argc, char* argv[]) {
             SDL_RenderPresent(renderer);
 
         } else if(gameState == GameState::MENU) {
-            renderStartScreen(renderer, font, titleFont);
+            renderStartScreen(renderer, font, titleFont, menuBackground);
         } else if(gameState == GameState::QUIT) {
             running = false;
         } else if (gameState == GameState::TUTORIAL) {

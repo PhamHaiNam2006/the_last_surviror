@@ -67,13 +67,6 @@ void MusicPlayer::playSfx() {
     Mix_PlayChannel(-1, soundEffect, 0);
 }
 
-void MusicPlayer::setVolume(int percent) {
-    if (percent < 0) percent = 0;
-    if (percent > 100) percent = 100;
-    int volume = (MIX_MAX_VOLUME * percent) / 100;
-    Mix_VolumeMusic(volume);
-}
-
 void MusicPlayer::update() {
     if (!Mix_PlayingMusic() && isPlaying && !playingSingle) {
         playNext();

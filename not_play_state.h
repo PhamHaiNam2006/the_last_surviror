@@ -19,7 +19,7 @@ enum class GameState {
 void RenderText(SDL_Renderer* renderer, TTF_Font* font, const std::string& text, int x, int y, SDL_Color color);
 void renderOption(SDL_Renderer* renderer, TTF_Font* font, GameState gameState, int musicVol, int sfxVol);
 void renderTutorialScreen(SDL_Renderer* renderer, TTF_Font* font);
-void renderStartScreen(SDL_Renderer* renderer, TTF_Font* font, TTF_Font* titleFont);
+void renderStartScreen(SDL_Renderer* renderer, TTF_Font* font, TTF_Font* titleFont, SDL_Texture* menuBackground);
 
 void resetGame(SDL_Rect& playerDest, int& playerHealth, int& playerStamina,
                std::vector<Enemy>& enemies, SDL_Texture* enemyTexture,
