@@ -24,7 +24,7 @@
 1743124304 e:\learning material\code blocks\dungeon_explorer\obstacle.h
 	<SDL.h>
 
-1747047634 source:e:\learning_material\code_blocks\dungeon_explorer\main.cpp
+1747134111 source:e:\learning_material\code_blocks\dungeon_explorer\main.cpp
 	<SDL.h>
 	<SDL_mixer.h>
 	<SDL_ttf.h>
@@ -37,8 +37,8 @@
 	"movement.h"
 	"map_data.h"
 	"enemy.h"
-	"enemy_spawner.h"
 	"music_player.h"
+	"not_play_state.h"
 
 1746328487 e:\learning_material\code_blocks\dungeon_explorer\movement.h
 	<SDL.h>
@@ -73,7 +73,7 @@
 	"movement.h"
 	<SDL.h>
 
-1746539726 source:e:\learning_material\code_blocks\dungeon_explorer\map_data.cpp
+1747131534 source:e:\learning_material\code_blocks\dungeon_explorer\map_data.cpp
 	"map_data.h"
 
 1746539726 e:\learning_material\code_blocks\dungeon_explorer\map_data.h
@@ -84,15 +84,17 @@
 	"enemy.h"
 	<cmath>
 
-1746605791 e:\learning_material\code_blocks\dungeon_explorer\enemy.h
+1747132716 e:\learning_material\code_blocks\dungeon_explorer\enemy.h
 	<SDL.h>
 	<vector>
 	"obstacle.h"
 
-1746540374 source:e:\learning_material\code_blocks\dungeon_explorer\enemy.cpp
+1747132716 source:e:\learning_material\code_blocks\dungeon_explorer\enemy.cpp
 	"enemy.h"
 	"movement.h"
 	<cmath>
+	<cstdlib>
+	<random>
 
 1745739693 source:e:\learning_material\code_blocks\dungeon_explorer\map_manager.cpp
 	"map_manager.h"
@@ -123,12 +125,25 @@
 	"enemy.h"
 	"obstacle.h"
 
-1746845620 source:e:\learning_material\code_blocks\dungeon_explorer\music_player.cpp
+1747134263 source:e:\learning_material\code_blocks\dungeon_explorer\music_player.cpp
 	"music_player.h"
 	<SDL.h>
 
-1746845620 e:\learning_material\code_blocks\dungeon_explorer\music_player.h
+1747135194 e:\learning_material\code_blocks\dungeon_explorer\music_player.h
 	<SDL_mixer.h>
 	<string>
 	<vector>
+
+1747133507 e:\learning_material\code_blocks\dungeon_explorer\not_play_state.h
+	<SDL.h>
+	<SDL_ttf.h>
+	<string>
+	<vector>
+	"enemy.h"
+	"obstacle.h"
+
+1747133507 source:e:\learning_material\code_blocks\dungeon_explorer\not_play_state.cpp
+	"not_play_state.h"
+	"defs.h"
+	<iostream>
 

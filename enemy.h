@@ -52,4 +52,7 @@ private:
     std::vector<Enemy>* allEnemies = nullptr;
 };
 
+void spawnEnemies(std::vector<Enemy>& enemies, SDL_Texture* enemyTexture, int count, int mapWidth, int mapHeight, const SDL_Rect& playerRect, const std::vector<Obstacle>& obstacles, float health);
+bool noEnemiesAlive(const std::vector<Enemy>& enemies);
+
 #endif

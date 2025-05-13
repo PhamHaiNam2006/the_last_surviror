@@ -59,6 +59,14 @@ void MusicPlayer::playSingleMusic() {
     playingSingle = true;
 }
 
+void MusicPlayer::LoadSoundEffect(const std::string& path) {
+    soundEffect =Mix_LoadWAV(path.c_str());
+}
+
+void MusicPlayer::playSfx() {
+    Mix_PlayChannel(-1, soundEffect, 0);
+}
+
 void MusicPlayer::setVolume(int percent) {
     if (percent < 0) percent = 0;
     if (percent > 100) percent = 100;
@@ -82,6 +90,8 @@ void MusicPlayer::cleanup() {
         Mix_FreeMusic(singleMusic);
         singleMusic = nullptr;
     }
+    Mix_FreeChunk(soundEffect);
+    soundEffect = nullptr;
 
     isPlaying = false;
     playingSingle = false;
