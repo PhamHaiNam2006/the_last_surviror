@@ -38,8 +38,6 @@
 		<Unit filename="dungeon_explorer.layout" />
 		<Unit filename="enemy.cpp" />
 		<Unit filename="enemy.h" />
-		<Unit filename="enemy_spawner.cpp" />
-		<Unit filename="enemy_spawner.h" />
 		<Unit filename="main.cpp" />
 		<Unit filename="main.exe" />
 		<Unit filename="map_data.cpp" />
@@ -48,6 +46,8 @@
 		<Unit filename="movement.h" />
 		<Unit filename="music_player.cpp" />
 		<Unit filename="music_player.h" />
+		<Unit filename="not_play_state.cpp" />
+		<Unit filename="not_play_state.h" />
 		<Unit filename="obstacle.cpp" />
 		<Unit filename="obstacle.h" />
 		<Unit filename="src/include/SDL2/SDL.h" />

@@ -25,6 +25,9 @@ public:
 
     bool touchingPlayer(const SDL_Rect& playerRect);
 
+    bool isPointsAwarded() const { return pointsAwarded; }
+    void setPointsAwarded(bool awarded) { pointsAwarded = awarded; }
+
 private:
     SDL_Rect rect;
     SDL_Texture* texture;
@@ -50,6 +53,8 @@ private:
     void moveToward(const SDL_Rect& playerRect, const std::vector<Obstacle>& obstacles);
 
     std::vector<Enemy>* allEnemies = nullptr;
+
+    bool pointsAwarded = false;
 };
 
 void spawnEnemies(std::vector<Enemy>& enemies, SDL_Texture* enemyTexture, int count, int mapWidth, int mapHeight, const SDL_Rect& playerRect, const std::vector<Obstacle>& obstacles, float health);

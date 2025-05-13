@@ -173,12 +173,13 @@ void renderStartScreen(SDL_Renderer* renderer, TTF_Font* font, TTF_Font* titleFo
 
 void resetGame(SDL_Rect& playerDest, int& playerHealth, int& playerStamina,
                std::vector<Enemy>& enemies, SDL_Texture* enemyTexture,
-               const std::vector<Obstacle>& obstacles, int& wave, int& n,
+               const std::vector<Obstacle>& obstacles, int& wave, int& n, int& point,
                Uint32& gameStartTime, bool& gameTimerActive, bool& gameEnded) {
     playerDest = { SCREEN_WIDTH / 2 - 10, SCREEN_HEIGHT / 2 - 11, 24, 32 };
     playerHealth = 100;
     playerStamina = 100;
 
+    point=0;
     wave = 1;
     n = 5;
     enemies.clear();

@@ -119,6 +119,7 @@ int main(int argc, char* argv[]) {
     int musicVolume = 50;
     int sfxVolume = 50;
 
+    int point = 0;
     Uint32 gameStartTime = 0;
     Uint32 optionEnterTime = 0;
     bool gameTimerActive = false;
@@ -235,8 +236,6 @@ int main(int argc, char* argv[]) {
                 }
             }
             if (gameEnded && event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
-                resetGame(playerDest, playerHealth, playerStamina, enemies, enemyTexture,
-                    obstacles, wave, n, gameStartTime, gameTimerActive, gameEnded);
                 int mx = event.button.x;
                 int my = event.button.y;
                 SDL_Rect menuButton = { SCREEN_WIDTH / 4 + 30, SCREEN_HEIGHT / 4 + 130, 150, 50 };
@@ -273,6 +272,8 @@ int main(int argc, char* argv[]) {
             gameTimerActive = true;
             gameEnded = false;
         } else if (lastMusicState == GameState::PLAYING && gameState == GameState::MENU) {
+            resetGame(playerDest, playerHealth, playerStamina, enemies, enemyTexture,
+                    obstacles, wave, n, point, gameStartTime, gameTimerActive, gameEnded);
             musicPlayer.playSingleMusic();
             lastMusicState = gameState;
         }
@@ -283,7 +284,8 @@ int main(int argc, char* argv[]) {
             const Uint8* keystates = SDL_GetKeyboardState(NULL);
             sprint = 1;
 
-            if (keystates[SDL_SCANCODE_UP] || keystates[SDL_SCANCODE_DOWN] || keystates[SDL_SCANCODE_LEFT] || keystates[SDL_SCANCODE_RIGHT]) {
+            if (!gameEnded) {
+                if (keystates[SDL_SCANCODE_UP] || keystates[SDL_SCANCODE_DOWN] || keystates[SDL_SCANCODE_LEFT] || keystates[SDL_SCANCODE_RIGHT]) {
                 playerState = PlayerState::WALKING;
                 if (keystates[SDL_SCANCODE_LEFT]) facingLeft = true;
                 else if (keystates[SDL_SCANCODE_RIGHT]) facingLeft = false;
@@ -291,180 +293,181 @@ int main(int argc, char* argv[]) {
                 playerState = PlayerState::IDLE;
             }
 
-            if (keystates[SDL_SCANCODE_LSHIFT] && playerStamina >= 2 && SDL_GetTicks() - runOutStamina >= runCooldown) {
-                sprint = 3;
-            } else if (playerStamina == 0) {
-                runOutStamina = SDL_GetTicks();
-            }
-
-            if (playerState == PlayerState::WALKING && sprint == 3) {
-                playerStamina = max(0, playerStamina - 2);
-            } else if (playerStamina < maxStamina) {
-                playerStamina += 1;
-            }
-
-            if (keystates[SDL_SCANCODE_SPACE] && SDL_GetTicks() - lastAttackTime >= attackCooldown && !playerAttacking) {
-                playerAttacking = true;
-                attackStartTime = SDL_GetTicks();
-                lastAttackTime = SDL_GetTicks();
-
-                if (facingLeft) {
-                    playerAttackBox = { playerDest.x - 24, playerDest.y, 32, 32 };
-                    slashDest = { playerDest.x - 24, playerDest.y - 16, 36, 64 };
-                } else {
-                    playerAttackBox = { playerDest.x + playerDest.w, playerDest.y, 32, 32 };
-                    slashDest = { playerDest.x + playerDest.w, playerDest.y - 16, 36, 64 };
+                if (keystates[SDL_SCANCODE_LSHIFT] && playerStamina >= 2 && SDL_GetTicks() - runOutStamina >= runCooldown) {
+                    sprint = 3;
+                } else if (playerStamina == 0) {
+                    runOutStamina = SDL_GetTicks();
                 }
 
-                showSlash = true;
-                slashStartTime = SDL_GetTicks();
-                currentFrame = 13;
+                if (playerState == PlayerState::WALKING && sprint == 3) {
+                    playerStamina = max(0, playerStamina - 2);
+                } else if (playerStamina < maxStamina) {
+                    playerStamina += 1;
+                }
 
-                musicPlayer.playSfx();
+                if (keystates[SDL_SCANCODE_SPACE] && SDL_GetTicks() - lastAttackTime >= attackCooldown && !playerAttacking) {
+                    playerAttacking = true;
+                    attackStartTime = SDL_GetTicks();
+                    lastAttackTime = SDL_GetTicks();
 
-            } else if (SDL_GetTicks() - lastAttackTime >= slashDuration) {
-                handleMovement(playerDest, obstacles,sprint);
-            }
+                    if (facingLeft) {
+                        playerAttackBox = { playerDest.x - 24, playerDest.y, 32, 32 };
+                        slashDest = { playerDest.x - 24, playerDest.y - 16, 36, 64 };
+                    } else {
+                        playerAttackBox = { playerDest.x + playerDest.w, playerDest.y, 32, 32 };
+                        slashDest = { playerDest.x + playerDest.w, playerDest.y - 16, 36, 64 };
+                    }
 
-            if (playerAttacking) {
-                Uint32 elapsed = SDL_GetTicks() - attackStartTime;
-
-                if (elapsed > 300) {
-                    playerAttacking = false;
-                    playerAttackBox = {0, 0, 0, 0};
-                } else if (elapsed > 200) {
-                    currentFrame = 15;
-                } else if (elapsed > 100) {
-                    currentFrame = 14;
-                } else {
+                    showSlash = true;
+                    slashStartTime = SDL_GetTicks();
                     currentFrame = 13;
+
+                    musicPlayer.playSfx();
+
+                } else if (SDL_GetTicks() - lastAttackTime >= slashDuration) {
+                    handleMovement(playerDest, obstacles,sprint);
                 }
-            }
 
-            if (showSlash && SDL_GetTicks() - slashStartTime > slashDuration) {
-                showSlash = false;
-            }
+                if (playerAttacking) {
+                    Uint32 elapsed = SDL_GetTicks() - attackStartTime;
 
-            if (playerState == PlayerState::WALKING && now - lastAnimTime > animDelay) {
-                currentFrame = (currentFrame >= 7) ? 2 : currentFrame + 1;
-                lastAnimTime = now;
-            } else if (playerState == PlayerState::IDLE && now - lastAnimTime > 800) {
-                currentFrame = (currentFrame == 0) ? 1 : 0;
-                lastAnimTime = now;
-            } else if (playerState == PlayerState::ATTACKING) {
-                currentFrame = (currentFrame >= 15) ? 13 : currentFrame + 1;
-            }
-
-            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-            SDL_RenderClear(renderer);
-
-            for (const auto& o : obstacles) {
-                SDL_Rect dest = o.getRect();
-                SDL_Rect src = o.getTileClip();
-                SDL_RenderCopy(renderer, tileTexture, &src, &dest);
-            }
-
-            playerSrc.x = currentFrame * 12;
-            SDL_RendererFlip flip = facingLeft ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
-
-            if (playerAttacking) {
-                SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
-                SDL_Rect renderBox = {
-                    playerAttackBox.x,
-                    playerAttackBox.y-16,
-                    playerAttackBox.w,
-                    playerAttackBox.h*2
-                };
-                SDL_RenderDrawRect(renderer, &renderBox);
-            }
-
-            SDL_RenderCopyEx(renderer, playerTexture, &playerSrc, &playerDest, 0, nullptr, flip);
-            if (showSlash) {
-                SDL_RenderCopyEx(renderer, slashTexture, &slashSrc, &slashDest, 0, nullptr, flip);
-
-                Uint32 hit = SDL_GetTicks();
-                for (auto& e : enemies) {
-                    SDL_Rect r = e.getHitbox();
-                    if (e.isAlive() && SDL_HasIntersection(&slashDest, &r) && hit - lastHit >= hitInvis) {
-                        e.getDamage(50);
-                        lastHit = hit;
-                        break;
+                    if (elapsed > 300) {
+                        playerAttacking = false;
+                        playerAttackBox = {0, 0, 0, 0};
+                    } else if (elapsed > 200) {
+                        currentFrame = 15;
+                    } else if (elapsed > 100) {
+                        currentFrame = 14;
+                    } else {
+                        currentFrame = 13;
                     }
                 }
-            }
 
-            for (auto& e : enemies) {
-                if (e.isAlive()) {
-                    e.update(playerDest, obstacles);
-                    e.render(renderer);
+                if (showSlash && SDL_GetTicks() - slashStartTime > slashDuration) {
+                    showSlash = false;
+                }
+
+                if (playerState == PlayerState::WALKING && now - lastAnimTime > animDelay) {
+                    currentFrame = (currentFrame >= 7) ? 2 : currentFrame + 1;
+                    lastAnimTime = now;
+                } else if (playerState == PlayerState::IDLE && now - lastAnimTime > 800) {
+                    currentFrame = (currentFrame == 0) ? 1 : 0;
+                    lastAnimTime = now;
+                } else if (playerState == PlayerState::ATTACKING) {
+                    currentFrame = (currentFrame >= 15) ? 13 : currentFrame + 1;
+                }
+
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+                SDL_RenderClear(renderer);
+
+                for (const auto& o : obstacles) {
+                    SDL_Rect dest = o.getRect();
+                    SDL_Rect src = o.getTileClip();
+                    SDL_RenderCopy(renderer, tileTexture, &src, &dest);
+                }
+
+                playerSrc.x = currentFrame * 12;
+                SDL_RendererFlip flip = facingLeft ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
+
+                if (playerAttacking) {
+                    SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+                    SDL_Rect renderBox = {
+                        playerAttackBox.x,
+                        playerAttackBox.y-16,
+                        playerAttackBox.w,
+                        playerAttackBox.h*2
+                    };
+                    SDL_RenderDrawRect(renderer, &renderBox);
+                }
+
+                SDL_RenderCopyEx(renderer, playerTexture, &playerSrc, &playerDest, 0, nullptr, flip);
+                if (showSlash) {
+                    SDL_RenderCopyEx(renderer, slashTexture, &slashSrc, &slashDest, 0, nullptr, flip);
+
                     Uint32 hit = SDL_GetTicks();
-                    if (e.touchingPlayer(playerDest)&&hit - playerHit >= playerInvis){
-                        playerHealth-=1;
-                        playerHit = hit;
+                    for (auto& e : enemies) {
+                        SDL_Rect r = e.getHitbox();
+                        if (e.isAlive() && SDL_HasIntersection(&slashDest, &r) && hit - lastHit >= hitInvis) {
+                            e.getDamage(50);
+                            lastHit = hit;
+                            break;
+                        }
                     }
                 }
-            }
-            if (gameTimerActive) {
-                Uint32 elapsed = SDL_GetTicks() - gameStartTime;
 
-                if (elapsed >= GAME_DURATION || playerHealth == 0) {
-                    gameEnded = true;
-                    gameTimerActive = false;
-                }
-            }
-
-            enemies.erase(
-                remove_if(enemies.begin(), enemies.end(),
-                                [](const Enemy& e) { return !e.isAlive(); }),
-                enemies.end());
-
-            if (noEnemiesAlive(enemies)) {
-                n++;
-                wave++;
-                spawnEnemies(enemies, enemyTexture, n, mapWidth, mapHeight, playerDest, obstacles, 100 * (1+(float)(wave-1)*0.05));
                 for (auto& e : enemies) {
-                    e.setAllEnemies(&enemies);
+                    if (e.isAlive()) {
+                        e.update(playerDest, obstacles);
+                        e.render(renderer);
+                        Uint32 hit = SDL_GetTicks();
+                        if (e.touchingPlayer(playerDest)&&hit - playerHit >= playerInvis){
+                            playerHealth-=1;
+                            playerHit = hit;
+                        }
+                    } else if (!e.isPointsAwarded()) {
+                        point +=100;
+                        e.setPointsAwarded(true);
+                        std::cout << "Enemy alive: " << e.isAlive()
+            << ", Current points: " << point << std::endl;
+                    }
                 }
+                if (gameTimerActive) {
+                    Uint32 elapsed = SDL_GetTicks() - gameStartTime;
+
+                    if (elapsed >= GAME_DURATION || playerHealth == 0) {
+                        gameEnded = true;
+                        gameTimerActive = false;
+                    }
+                }
+                if (noEnemiesAlive(enemies)) {
+                    n++;
+                    wave++;
+                    spawnEnemies(enemies, enemyTexture, n, mapWidth, mapHeight, playerDest, obstacles, 100 * (1+(float)(wave-1)*0.05));
+                    for (auto& e : enemies) {
+                        e.setAllEnemies(&enemies);
+                    }
+                }
+
+                SDL_RenderCopy(renderer, cogTexture, nullptr, &cogButton);
+
+                SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+                SDL_Rect healthBack = { 20, 20, 200, 20 };
+                SDL_Rect healthFill = { 20, 20, 200 * playerHealth / maxHealth, 20 };
+
+                SDL_SetRenderDrawColor(renderer, 100, 0, 0, 255);
+                SDL_RenderFillRect(renderer, &healthBack);
+                SDL_SetRenderDrawColor(renderer, 0, 200, 0, 255);
+                SDL_RenderFillRect(renderer, &healthFill);
+
+                SDL_Rect staminaBack = { 20, 45, 200, 15 };
+                SDL_Rect staminaFill = { 20, 45, 200 * playerStamina / maxStamina, 15 };
+
+                SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
+                SDL_RenderFillRect(renderer, &staminaBack);
+                SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+                SDL_RenderFillRect(renderer, &staminaFill);
+
+                Uint32 now = SDL_GetTicks();
+                Uint32 elapsed = now - gameStartTime;
+
+                remaining = totalDuration - elapsed;
+                if (remaining < 0) remaining = 0;
+
+                minutes = remaining / 60000;
+                seconds = (remaining / 1000) % 60;
+
+                snprintf(timerText, sizeof(timerText), "Time: %02d:%02d", minutes, seconds);
+                RenderText(renderer, font, timerText, 20, 70, {255, 255, 255});
             }
-
-            SDL_RenderCopy(renderer, cogTexture, nullptr, &cogButton);
-
-            SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-            SDL_Rect healthBack = { 20, 20, 200, 20 };
-            SDL_Rect healthFill = { 20, 20, 200 * playerHealth / maxHealth, 20 };
-
-            SDL_SetRenderDrawColor(renderer, 100, 0, 0, 255);
-            SDL_RenderFillRect(renderer, &healthBack);
-            SDL_SetRenderDrawColor(renderer, 0, 200, 0, 255);
-            SDL_RenderFillRect(renderer, &healthFill);
-
-            SDL_Rect staminaBack = { 20, 45, 200, 15 };
-            SDL_Rect staminaFill = { 20, 45, 200 * playerStamina / maxStamina, 15 };
-
-            SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
-            SDL_RenderFillRect(renderer, &staminaBack);
-            SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
-            SDL_RenderFillRect(renderer, &staminaFill);
-
-            Uint32 now = SDL_GetTicks();
-            Uint32 elapsed = now - gameStartTime;
-
-            remaining = totalDuration - elapsed;
-            if (remaining < 0) remaining = 0;
-
-            minutes = remaining / 60000;
-            seconds = (remaining / 1000) % 60;
-
-            snprintf(timerText, sizeof(timerText), "Time: %02d:%02d", minutes, seconds);
-            RenderText(renderer, font, timerText, 20, 70, {255, 255, 255});
-
             if (gameEnded) {
                 SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
                 SDL_SetRenderDrawColor(renderer, 0, 0, 0, 200);
                 SDL_Rect overlay = { SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 };
                 SDL_RenderFillRect(renderer, &overlay);
 
-                RenderText(renderer, font, "Game Over", overlay.x + 80, overlay.y + 30, {255, 255, 255});
+                string pointText = "Points: " + to_string(point);
+
+                RenderText(renderer, font, pointText, overlay.x + 80, overlay.y + 30, {255, 255, 255});
                 RenderText(renderer, font, "Return to Menu or Quit?", overlay.x + 40, overlay.y + 70, {200, 200, 200});
 
                 SDL_Rect menuButton = { overlay.x + 30, overlay.y + 130, 150, 50 };
@@ -478,7 +481,8 @@ int main(int argc, char* argv[]) {
                 RenderText(renderer, font, "Quit", quitButton.x + 50, quitButton.y + 15, {255, 255, 255});
             }
 
-            SDL_RenderPresent(renderer);
+                SDL_RenderPresent(renderer);
+
 
         } else if(gameState == GameState::MENU) {
             renderStartScreen(renderer, font, titleFont, menuBackground);
